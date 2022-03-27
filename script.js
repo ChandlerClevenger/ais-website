@@ -7,7 +7,6 @@ let tileJSON;
 $.ajax({
   type: "GET",
   url: "./denmark_tiles/MAP_VIEW.json",
-  dataType: "json",
   success: function (data) {
     tileJSON = data;
     displayDefault();
@@ -23,6 +22,21 @@ $("#tileDisplay").on("DOMSubtreeModified", () => {
   }
   currentTileJSON = getTileFromTileId(tileDiv.getAttribute("data-tileid"));
   updateContainedTiles(currentTileJSON.id);
+
+  // get vessels
+  $.ajax({
+    method: "POST",
+    url: "localhost:8080",
+    dataType: "application/json",
+    crossDomain: true,
+    data: { tile: currentTileJSON.id },
+    success: function (data) {
+      console.log("Data from server", data);
+    },
+    fail: function (err) {
+      console.log(err);
+    },
+  });
 });
 
 tileDiv.addEventListener("contextmenu", (event) => {
@@ -38,6 +52,7 @@ function handleClick(event) {
   if (event.button == 0) {
     leftclick(event);
   } else if (event.button == 2) {
+    // right click
     switch (currentTileJSON.scale) {
       case 1:
         break;
