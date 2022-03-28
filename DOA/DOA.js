@@ -24,7 +24,6 @@ module.exports = class DOA {
         // then we could find all vessels by the tiles in position_report
         .then((res) => {
           results = JSON.stringify(res.fetchAll());
-          console.log("Last then with() value:", results);
           resolve(results);
         })
         .catch((error) => {
