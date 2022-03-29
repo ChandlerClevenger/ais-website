@@ -1,5 +1,4 @@
 const http = require("http");
-const { StringDecoder } = require("string_decoder");
 const DOA = require("../DOA/DOA.js");
 const headers = {
   "Access-Control-Allow-Origin": "*",
@@ -26,12 +25,14 @@ http
 console.log("Server running");
 
 function handlePOST(req, res) {
+  let data;
   console.log("req post", req.method);
   req.on("data", (data) => {
-    console.log("data", JSON.parse(data.toString()));
+    data = JSON.parse(data.toString());
+    console.log("data", data);
   });
   req.on("end", () => {
-    res.end("received");
+    res.end(JSON.stringify(data));
   });
 }
 
@@ -44,8 +45,10 @@ function handleGET(req, res) {
   req.on("end", () => {
     let db = new DOA();
     res.writeHead(200, "OK", headers);
-    db.getVessels(1).then((results) => {
-      res.end(results);
+    //should probably check for if id exists
+    db.getVessels(receivedJSON["id"]).then((vessels) => {
+      console.log("Size:", vessels.length);
+      res.end(JSON.stringify(vessels));
     });
   });
 }
