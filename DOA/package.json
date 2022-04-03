@@ -1,5 +1,0 @@
-{
-  "dependencies": {
-    "@mysql/xdevapi": "8.0.28"
-  }
-}
