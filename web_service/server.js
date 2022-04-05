@@ -1,11 +1,8 @@
 const http = require("http");
-const DOA = require("../DOA/DOA.js");
+const DAO = require("../DAO/DAO.js");
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "*",
-  "Access-Control-Allow-Headers": "*",
-  Allow: "POST, GET",
-  "Content-Type": "application/json",
+  "Access-Control-Allow-Methods": "POST, GET",
 };
 
 http
@@ -14,11 +11,15 @@ http
       case "POST":
         handlePOST(req, res);
         break;
+
       case "GET":
         handleGET(req, res);
         break;
+
       default:
-        res.end("ONLY ACCEPTS GET AND POST");
+        res.writeHead(405, headers);
+        res.end(`${req.method} is not a valid method.`);
+        break;
     }
   })
   .listen(8080, "localhost");
@@ -43,13 +44,21 @@ function handleGET(req, res) {
   req.on("data", (data) => {});
 
   req.on("end", () => {
-    let db = new DOA();
-    res.writeHead(200, "OK", headers);
+    let db = new DAO();
+    res.writeHead(200, headers);
     //should probably check for if id exists
-    db.getVessels(receivedJSON["id"]).then((vessels) => {
-      console.log("Size:", vessels.length);
-      res.end(JSON.stringify(vessels));
-    });
+    db.getVessels(
+      receivedJSON["id"],
+      receivedJSON["scale"],
+      decodeURIComponent(receivedJSON["timestamp"])
+    )
+      .then((vessels) => {
+        res.end(JSON.stringify(vessels));
+      })
+      .catch((rej) => {
+        console.log(rej);
+        res.end("Failed to retreive vessels");
+      });
   });
 }
 
