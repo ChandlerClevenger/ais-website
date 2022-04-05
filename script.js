@@ -3,6 +3,30 @@ let lastClickedTile;
 let containedTiles = [];
 let currentTileJSON;
 let tileJSON;
+let basedate = new Date("2020-11-18 00:00:00");
+let timeOffset = 0;
+let speed = 3;
+
+setInterval(() => {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:8080/",
+    data: {
+      id: currentTileJSON.id,
+      scale: currentTileJSON.scale,
+      timestamp: `2020-11-18 ${getTime()}`,
+    },
+    success: function (vessels) {
+      for (let vessel of JSON.parse(vessels)) {
+        drawVessel(vessel);
+      }
+    },
+    fail: function (err) {
+      console.log(err);
+    },
+  });
+}, speed * 1000);
+
 $(document).ready(() => {
   $.ajax({
     type: "GET",
@@ -20,6 +44,12 @@ $(document).ready(() => {
     event.preventDefault();
   });
 });
+
+function getTime() {
+  let queryDate = new Date(basedate.getTime() + timeOffset * 1000);
+  timeOffset += speed;
+  return queryDate.toString().match(/\d\d:\d\d:\d\d/g)[0];
+}
 
 function displayDefault() {
   currentTileJSON = getTileFromTileId("1");
@@ -50,14 +80,20 @@ function drawVessel(vessel) {
     0,
     x
   );
-
+  let boatWidth = 20;
+  let boatHeight = 20;
   boat.style.setProperty("position", "absolute");
   boat.style.setProperty("left", boatLon + "px");
   boat.style.setProperty("top", boatLat + "px");
-  boat.style.setProperty("width", 20 + "px");
-  boat.style.setProperty("height", 20 + "px");
+  boat.style.setProperty("width", boatWidth + "px");
+  boat.style.setProperty("height", boatHeight + "px");
   boat.style.setProperty("pointer-events", "none");
-  boat.style.setProperty("data-id", "");
+  boat.style.setProperty(
+    "transform",
+    `translate(-${boatWidth / 2}px,-${boatHeight / 2}px)
+    rotate(${vessel[12]}deg)`
+  );
+  boat.setAttribute("data-imo", vessel[4]);
 
   boat.classList.add("boat");
   tileDiv.appendChild(boat);
@@ -127,7 +163,6 @@ function updateDisplay(tileJSON) {
   img.setAttribute("src", "./denmark_tiles/" + tileJSON.filename);
   img.addEventListener("mouseup", (event) => handleClick(event));
   tileDiv.appendChild(img);
-  let count = 0;
   for (let vessel of vessels) {
     if (
       vessel[7] > currentTileJSON.image_west &&
@@ -136,8 +171,6 @@ function updateDisplay(tileJSON) {
       vessel[8] < currentTileJSON.image_north
     ) {
       drawVessel(vessel);
-
-      count++;
     }
   }
 }
