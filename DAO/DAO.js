@@ -36,11 +36,7 @@ module.exports = class DOA {
             .execute();
         })
         .then((vessels) => {
-          console.log("resolving");
-          let v = vessels.fetchAll();
-          resolve(v);
-
-          console.log(v, "After resolve");
+          resolve(vessels.fetchAll());
         })
         .catch((error) => {
           reject(error);
