@@ -23,7 +23,7 @@ http
         break;
     }
   })
-  .listen(8080, "localhost");
+  .listen(3000, "localhost");
 console.log("Server running");
 
 function handleGET(req, res) {
@@ -54,6 +54,7 @@ function handlePOST(req, res) {
 
     default:
       sendInvalidEndpoint(req, res);
+      break;
   }
 }
 
@@ -93,6 +94,7 @@ function handleGetVessel(req, res, receivedJSON) {
       decodeURIComponent(receivedJSON["timestamp"])
     )
       .then((vessels) => {
+        console.log(`Serving ${vessels.length} Vessels`);
         res.end(JSON.stringify(vessels));
       })
       .catch((rej) => {
