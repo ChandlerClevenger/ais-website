@@ -17,6 +17,7 @@ http
         break;
 
       default:
+        // Failure to use correct method
         res.writeHead(405, headers);
         res.end(`${req.method} is not a valid method.`);
         break;
@@ -25,23 +26,62 @@ http
   .listen(8080, "localhost");
 console.log("Server running");
 
-function handlePOST(req, res) {
-  let data;
-  console.log("req post", req.method);
-  req.on("data", (data) => {
-    data = JSON.parse(data.toString());
-    console.log("data", data);
-  });
-  req.on("end", () => {
-    res.end(JSON.stringify(data));
-  });
+function handleGET(req, res) {
+  let [pathParts, receivedJSON] = parseGetUrl(req.url);
+  switch (pathParts.shift()) {
+    case "vessel":
+      // prevents access from invalid paths
+      if (pathParts.length) {
+        sendInvalidEndpoint(req, res);
+        break;
+      }
+      handleGetVessel(req, res, receivedJSON);
+      break;
+
+    default:
+      sendInvalidEndpoint(req, res);
+      break;
+  }
 }
 
-function handleGET(req, res) {
-  let receivedJSON = parseUrl(req.url);
-  console.log("REGEIVED GET");
-  // no clue why you must read this data, but just gotta
-  req.on("data", (data) => {});
+function handlePOST(req, res) {
+  let pathParts = parsePostUrl(req.url);
+
+  switch (pathParts.shift()) {
+    case "AISFeed":
+      handlePostAISFeed(req, res, pathParts);
+      break;
+
+    default:
+      sendInvalidEndpoint(req, res);
+  }
+}
+
+function handlePostAISFeed(req, res, pathParts) {
+  let data;
+  let timestamp = pathParts.shift();
+  if (
+    timestamp.match(
+      /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z$)/
+    ) &&
+    !pathParts.length
+  ) {
+    req.on("data", (data) => {
+      data = JSON.parse(data.toString());
+      console.log(data);
+    });
+    req.on("end", () => {
+      res.end(JSON.stringify(data));
+    });
+  } else {
+    // Failure to format to AISFeed requirements
+    res.writeHead(400, { "Content-Type": "text/plain", ...headers });
+    res.end(`${req.url} is an Invalid Endpoint!`);
+  }
+}
+
+function handleGetVessel(req, res, receivedJSON) {
+  req.on("data", (data) => {}); // no clue why you must read this data, but just gotta
 
   req.on("end", () => {
     let db = new DAO();
@@ -62,13 +102,23 @@ function handleGET(req, res) {
   });
 }
 
-function parseUrl(url) {
-  url = url.replace(/^\/\?/, "");
-  let split = url.split("&");
+function parseGetUrl(url) {
+  let [_, path, params] = url.match(/((?<=\/)\S*(?=\?))\?(\S*)/);
+  let split = params.split("&");
   let requestJSON = {};
   for (let pair of split) {
     let [key, val] = pair.split("=");
     requestJSON[key] = val;
   }
-  return requestJSON;
+  return [path.split("/"), requestJSON];
+}
+
+function sendInvalidEndpoint(req, res) {
+  // Failure to match any endpoint
+  res.writeHead(400, { "Content-Type": "text/plain", ...headers });
+  res.end(`${req.url} is an Invalid Endpoint!`);
+}
+
+function parsePostUrl(url) {
+  return url.split("/").slice(1);
 }
