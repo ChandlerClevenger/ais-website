@@ -11,7 +11,7 @@ let displayableVessels = {};
 setInterval(() => {
   $.ajax({
     type: "GET",
-    url: "http://localhost:8080/",
+    url: "http://localhost:3000/",
     data: {
       id: currentTileJSON.id,
       scale: currentTileJSON.scale,
