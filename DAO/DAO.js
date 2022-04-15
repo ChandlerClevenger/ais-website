@@ -1,12 +1,12 @@
-let mysqlx = require("@mysql/xdevapi");
+let mysql = require("mysql");
 //const parse = require("@mysql/xdevapi/lib/DevAPI/Util/URIParser");
 const config = require("../config.js");
 let dbconfigs = {
   host: config.db.host,
   port: config.db.port,
   user: config.db.user,
-  password: "",
-  schema: config.db.schema,
+  password: config.db.password,
+  database: config.db.schema
 };
 
 module.exports = class DOA {
@@ -14,7 +14,7 @@ module.exports = class DOA {
     return echo;
   }
 
-  insertMesssageBatch(batch){
+  insertMesssageBatchOLD(batch){
     var array = JSON.parse(batch)
     for (let i= 0; i<array.length; i++){
       var newArray = JSON.stringify(array[i])
@@ -23,7 +23,7 @@ module.exports = class DOA {
     return array.length;
   }
 
-  insertAISMessage(messageDoc) {
+  insertAISMessageOLD(messageDoc) {
     return new Promise((resolve, reject) => {
       const session = mysqlx.getSession(dbconfigs);
       session.then(session => {
@@ -288,6 +288,92 @@ module.exports = class DOA {
     });
   }
 
+  insertAISMessageBatch(batch) {
+    return new Promise((resolve, reject) => {
+      let error;
+      for(let message of batch) {
+        this.insertAISMessage(message).catch(err => {error = err});
+      }
+      if (error) reject(error);
+      resolve(batch.length);
+    })
+  }
+
+  insertAISMessage(message) {
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection({
+        host     : 'localhost',
+        user     : 'root',
+        database : 'aistestdata'
+      });
+      if (message.MsgType == "position_report") {
+        let position = message.Position;
+        connection.query(
+          `
+          INSERT INTO d_position_report
+          SET ?
+          `,
+          [
+            {
+              Timestamp : convertTimestamp(message.Timestamp), 
+                Class : message.Class,
+                MMSI : message.MMSI, 
+                Longitude : position.coordinates[1], 
+                Latitude : position.coordinates[0], 
+                Status : message.Status ? message.Status : null, 
+                RoT : message.RoT ? message.RoT : null, 
+                SoG : message.SoG ? message.SoG : null, 
+                CoG :message.CoG ? message.CoG : null, 
+                Heading : message.Heading ? message.Heading : null
+            }
+          ]
+          ,
+          function (error, results, fields) {
+            if (error) {
+              console.log("ERROR INSERTING POSITION REPORT")
+              reject(error);
+            } else {
+              resolve(results);
+            }
+            connection.destroy();
+          })
+      } else if (message.MsgType == "static_data") {
+        connection.query(
+          `
+          INSERT INTO d_static_data
+          SET ?
+          `,
+          [
+            {
+            Timestamp : convertTimestamp(message.Timestamp),
+            MMSI : message.MMSI ? message.MMSI : null, 
+            IMO :(message.IMO && message.IMO != "Unknown") ? message.IMO : null, 
+            Name : message.Name ? message.Name : null, 
+            Class : message.Class ? message.Class : null, 
+            CallSign : message.CallSign ? message.CallSign : null, 
+            VesselType : message.VesselType ? message.VesselType : null, 
+            CargoType : message.CargoType ? message.CargoType : null,
+            Destination : message.Destination ? message.Destination : null,
+            ETA : message.ETA ? convertTimestamp(message.ETA) : null,
+            Length : message.Length ? message.Length : null,
+            Breadth : message.Breadth ? message.Breadth : null
+            }
+          ]
+          ,
+          function (error, results, fields) {
+            if (error) {
+              console.log("ERROR INSERTING STATIC DATA")
+              console.log(error)
+              reject(error);
+            } else {
+              resolve(results);
+            }
+            connection.destroy();
+          })
+      }
+    })
+  }
+
   getVessels(tileId, scale, timestamp) {
     return new Promise((resolve, reject) => {
       const session = mysqlx.getSession(dbconfigs);
@@ -319,3 +405,7 @@ module.exports = class DOA {
     });
   }
 };
+
+function convertTimestamp(timestamp) {
+  return timestamp.slice(0, 19).replace('T', ' ');
+}
