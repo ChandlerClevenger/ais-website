@@ -59,7 +59,7 @@ function handlePOST(req, res) {
 }
 
 function handlePostAISFeed(req, res, pathParts) {
-  let data;
+  let vessels;
   let timestamp = pathParts.shift();
   if (
     timestamp.match(
@@ -68,11 +68,20 @@ function handlePostAISFeed(req, res, pathParts) {
     !pathParts.length
   ) {
     req.on("data", (data) => {
-      data = JSON.parse(data.toString());
-      console.log(data);
+      vessels = JSON.parse(data.toString());
     });
     req.on("end", () => {
-      res.end(JSON.stringify(data));
+      let db = new DAO();
+      db.insertAISMessageBatch(vessels)
+      .then((result) => {
+        console.log("Inserted", result, "AIS Messages")
+        res.writeHead(200, { "Content-Type":"text/plain", ...headers})
+        res.end("POST inserted")
+      })
+      .catch((rej) => {
+        console.log(rej);
+        res.end("Failed to post vessels");
+      });
     });
   } else {
     // Failure to format to AISFeed requirements
