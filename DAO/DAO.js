@@ -6,13 +6,12 @@ let dbconfigs = {
   password: config.db.password,
   database: config.db.schema
 };
-
 module.exports = class DOA {
   getTest(echo) {
     return echo;
   }
-
-  insertMesssageBatchOLD(batch){
+  stub = false;
+  /*insertMesssageBatchOLD(batch){
     var array = JSON.parse(batch)
     for (let i= 0; i<array.length; i++){
       var newArray = JSON.stringify(array[i])
@@ -254,39 +253,33 @@ module.exports = class DOA {
       .catch(err => {reject(err); })
     });
   }
+*/
 
-  readAllPortsMatchingName(Name, Country){
-    return new Promise((resolve, reject) => {
-      const session = mysqlx.getSession(dbconfigs);
-      session.then(session => {
-        var query=""
-        if (Name.length >0 && Country == undefined){
-          query= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name='" + Name + "'";
-        }
-        else if (Name.length >0 && Country.length >0){
-          query= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name='" + Name + "' AND Country='" + Country + "'";
-        }
-        
-        return session.sql(query)	
-        .execute();
-      })
-      .then( res => {
-        let result = res.fetchAll();
-        let array = [];
-        for (let i = 0; i<result.length; i++){
-            array.push({"Id":result[i][0],"Name":result[i][1],"Country":result[i][2], "Latitude":result[i][3], "Longitude":result[i][4], "MapView1_Id":result[i][5], 
-            "MapView2_Id":result[i][6], "MapView3_Id":result[i][7]})
-        }
-        resolve(array);
-
-        console.log(JSON.stringify(array))
-        process.kill(process.pid, 'SIGTERM')
-      })
-      .catch(err => {reject(err); })
-    });
-  }
-
+//updated insertBatch function to use stubs for unit tests
   insertAISMessageBatch(batch) {
+    try {
+      let array = JSON.parse( batch )
+      if (this.stub) {
+        return array.length;
+      }
+      else{
+        return new Promise((resolve, reject) => {
+          let error;
+          for(let message of array) {
+            this.insertAISMessage(message).catch(err => {error = err});
+            //console.log("hello")
+          }
+          if (error) reject(error);
+          resolve(array.length);
+        })
+      }
+    } catch (e){
+      console.log("Error:" + e)
+		  return -1
+    }
+  }
+  
+  /*insertAISMessageBatch(batch) {
     return new Promise((resolve, reject) => {
       let error;
       for(let message of batch) {
@@ -294,8 +287,9 @@ module.exports = class DOA {
       }
       if (error) reject(error);
       resolve(batch.length);
-    })
+    })  
   }
+  */
 
   insertAISMessage(message) {
     return new Promise((resolve, reject) => {
@@ -327,7 +321,13 @@ module.exports = class DOA {
               console.log("ERROR INSERTING POSITION REPORT")
               reject(error);
             } else {
-              resolve(results);
+              if (results.affectedRows == 1) {
+                resolve(1)
+              }else {
+                resolve(0)
+              }
+
+              //resolve(results);
             }
             connection.destroy();
           })
@@ -360,11 +360,62 @@ module.exports = class DOA {
               console.log(error)
               reject(error);
             } else {
-              resolve(results);
+              if (results.affectedRows == 1) {
+                resolve(1)
+              } else{
+                resolve (0)
+              }
+              //resolve(results);
             }
             connection.destroy();
           })
       }
+      else {
+        resolve(0)
+      }
+    })
+  }
+  readAllPortsMatchingName(Name, Country){
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      if (Name.length >0 && Country == undefined){
+        let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name)
+        connection.query(
+          query1,
+          function (error, results, fields) {
+            if (error) {
+              console.log("ERROR INSERTING POSITION REPORT")
+              reject(error);
+            } else {
+              let array = [];
+              for (let i = 0; i<results.length; i++){
+                array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
+              }
+              resolve(array);
+            }
+            connection.destroy();
+          })
+        }
+        else if (Name.length >0 && Country.length >0){
+          let query1 =  "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + " AND Country=" + connection.escape(Country)
+          //console.log(query1)
+          connection.query(
+            query1,
+            function (error, results, fields) {
+              if (error) {
+                console.log("ERROR INSERTING POSITION REPORT")
+                reject(error);
+              } else {
+                //console.log(results)
+                let array = [];
+                for (let i = 0; i<results.length; i++){
+                  array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
+                }
+                resolve(array);
+              }
+              connection.destroy();
+            })
+        }
     })
   }
 
