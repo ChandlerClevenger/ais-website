@@ -299,12 +299,7 @@ module.exports = class DOA {
 
   insertAISMessage(message) {
     return new Promise((resolve, reject) => {
-      let connection = mysql.createConnection({
-        host     : 'localhost',
-        user     : 'root',
-        database : 'aistestdata',
-        password : ''
-      });
+      let connection = mysql.createConnection(dbconfigs);
       if (message.MsgType == "position_report") {
         let position = message.Position;
         connection.query(
