@@ -1,9 +1,7 @@
 let mysql = require("mysql");
-//const parse = require("@mysql/xdevapi/lib/DevAPI/Util/URIParser");
 const config = require("../config.js");
 let dbconfigs = {
   host: config.db.host,
-  port: config.db.port,
   user: config.db.user,
   password: config.db.password,
   database: config.db.schema
@@ -304,7 +302,8 @@ module.exports = class DOA {
       let connection = mysql.createConnection({
         host     : 'localhost',
         user     : 'root',
-        database : 'aistestdata'
+        database : 'aistestdata',
+        password : ''
       });
       if (message.MsgType == "position_report") {
         let position = message.Position;
