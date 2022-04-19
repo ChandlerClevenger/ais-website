@@ -5,6 +5,14 @@ const headers = {
   "Access-Control-Allow-Methods": "POST, GET",
 };
 
+// clean up then set 5 min cleanup
+// timestamp is updated by feeder
+let timestamp = "2020-11-18T00:00:00.000Z";
+cleanupTables();
+setInterval(()=> {
+  cleanupTables();
+}, 300000);
+
 http
   .createServer((req, res) => {
     switch (req.method) {
@@ -60,7 +68,7 @@ function handlePOST(req, res) {
 
 function handlePostAISFeed(req, res, pathParts) {
   let vessels;
-  let timestamp = pathParts.shift();
+  timestamp = pathParts.shift();
   if (
     timestamp.match(
       /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z$)/
@@ -132,4 +140,21 @@ function sendInvalidEndpoint(req, res) {
 
 function parsePostUrl(url) {
   return url.split("/").slice(1);
+}
+
+function cleanupTables() {
+  if (timestamp.match(
+    /^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z$)/
+  )) {
+    let db = new DAO();
+    db.cleanupMessages(timestamp)
+    .then(res => {
+      console.log("SUCCESS IN CLEANING MESSAGES!", `Deleted ${res} messages.`);
+    })
+    .catch(rej => {
+      console.log("FAILURE TO CLEAN MESSAGES!", rej);
+    });
+  } else {
+    console.error("TIMESTAMP IS INVALID!", timestamp);
+  }
 }
