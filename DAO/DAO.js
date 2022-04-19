@@ -11,176 +11,7 @@ module.exports = class DOA {
     return echo;
   }
   stub = false;
-  /*insertMesssageBatchOLD(batch){
-    var array = JSON.parse(batch)
-    for (let i= 0; i<array.length; i++){
-      var newArray = JSON.stringify(array[i])
-      this.insertAISMessage(newArray)
-    }
-    return array.length;
-  }
-
-  insertAISMessageOLD(messageDoc) {
-    return new Promise((resolve, reject) => {
-      const session = mysqlx.getSession(dbconfigs);
-      session.then(session => {
-        var max = "Select MAX(Id) FROM ais_message";
-        return session.sql(max)
-        .execute();
-      })
-      .then( session => {
-
-        let v = session.fetchAll();
-        resolve(v);
-        let maxId = v[0][0]+1
-
-        const session2 = mysqlx.getSession(dbconfigs);
-        session2.then(session2 => {
-          var parsedMessage = JSON.parse(messageDoc)
-          var timestamp = parsedMessage.Timestamp
-          var newTimeStamp = timestamp.replace(/Z/g, "");
-          //console.log(newTimeStamp)
-          let query = ""
-          let query2 = ""
-          let id1 = ""
-          let id2 = ""
-          let id3 = ""
-          //console.log(parsedMessage.MsgType)
-      
-          if (parsedMessage.MsgType == 'position_report') {
-            var coordinates = parsedMessage.Position.coordinates
-            var latitude = coordinates[0]
-            var longitude = coordinates[1]
-            var mapView1 = "SELECT Id FROM aistestdata.map_view where Scale=1 AND LatitudeS<= " + latitude + " AND LatitudeN >= " + latitude + " AND LongitudeW <= " + longitude + " AND LongitudeE >= " + longitude;
-            var mapView2 = "SELECT Id FROM aistestdata.map_view where Scale=2 AND LatitudeS<= " + latitude + " AND LatitudeN >= " + latitude + " AND LongitudeW <= " + longitude + " AND LongitudeE >= " + longitude;
-            var mapView3 = "SELECT Id FROM aistestdata.map_view where Scale=3 AND LatitudeS<= " + latitude + " AND LatitudeN >= " + latitude + " AND LongitudeW <= " + longitude + " AND LongitudeE >= " + longitude;
-            query = "INSERT INTO AIS_MESSAGE VALUES (" + maxId + ", '" + newTimeStamp + "', " + parsedMessage.MMSI + ", '" + parsedMessage.Class + "', NULL);"
-            const session4 = mysqlx.getSession(dbconfigs);
-            session4.then(session4 => {
-              query2= "INSERT INTO POSITION_REPORT VALUES(" + maxId + ",'" + parsedMessage.Status + "', " + longitude + ", " + latitude + ", " + parsedMessage.RoT + ", " + parsedMessage.SoG + ", " + parsedMessage.CoG + ", " + parsedMessage.Heading + ", NULL, NULL, NUll, NULL);"
-              //console.log("query2: " + query2)
-              return session4.sql(query2)
-              .execute()
-            })
-            .then(session4 => {
-              let v = session4.fetchAll();
-              resolve(v)
-              //console.log(v)
-              //console.log("done")
-              const session5 = mysqlx.getSession(dbconfigs);
-              session5.then(session5 => {
-                return session5.sql(mapView1)
-                .execute()
-              })
-              .then(session5 => {
-                let v = session5.fetchAll();
-                resolve(v)
-                //console.log("done2")
-                id1 = v[0][0]
-                const session6 = mysqlx.getSession(dbconfigs);
-                session6.then(session6 => {
-                  return session6.sql("UPDATE POSITION_REPORT SET MapView1_Id=" + id1 + " where AISMessage_Id=" + maxId)
-                  .execute()
-                })
-                .then(session6 => {
-                  let v = session6.fetchAll();
-                  resolve(v)
-                  //console.log(v)
-                  //console.log("done3")
-                })
-                .catch(err => {reject(err);})
-              })
-              .catch(err => {reject(err);})
-              const session7 = mysqlx.getSession(dbconfigs);
-              session7.then(session7 => {
-                return session7.sql(mapView2)
-                .execute()
-              })
-              .then(session7 => {
-                let v = session7.fetchAll();
-                resolve(v)
-                id2 = v[0][0]
-                const session8 = mysqlx.getSession(dbconfigs);
-                session8.then(session8 => {
-                  return session8.sql("UPDATE POSITION_REPORT SET MapView2_Id=" + id2 + " where AISMessage_Id=" + maxId)
-                  .execute()
-                })
-                .then(session8 => {
-                  let v = session8.fetchAll();
-                  resolve(v)
-                  //console.log(v)
-                  //console.log("done4")
-                })
-                .catch(err => {reject(err);})
-              })
-              .catch(err => {reject(err);})
-              const session9 = mysqlx.getSession(dbconfigs);
-              session9.then(session9 => {
-                return session9.sql(mapView3)
-                .execute()
-              })
-              .then(session9 => {
-                let v = session9.fetchAll();
-                resolve(v)
-                //console.log("Done5")
-                id3 = v[0][0]
-                const session10 = mysqlx.getSession(dbconfigs);
-                session10.then(session10 => {
-                  return session10.sql("UPDATE POSITION_REPORT SET MapView3_Id=" + id3 + " where AISMessage_Id=" + maxId)
-                  .execute()
-                })
-                .then(session10 => {
-                  let v = session10.fetchAll();
-                  resolve(v)
-                 // console.log(v)
-                  //console.log("done6")
-                })
-                .catch(err => {reject(err);})
-              })
-              .catch(err => {reject(err);})
-            })
-            .catch(err => {reject(err);})
-          }
-          else if (parsedMessage.MsgType == 'static_data') {
-            var eta = parsedMessage.ETA
-            var newETA = eta.replace(/Z/g, "")
-            query = "INSERT INTO AIS_MESSAGE VALUES (" + maxId + ", '" + newTimeStamp + "', " + parsedMessage.MMSI + ", '" + parsedMessage.Class + "', " + parsedMessage.IMO + ");" 
-            const session3 = mysqlx.getSession(dbconfigs);
-            session3.then(session3 => {
-              if (parsedMessage.CargoType == undefined){
-                query2="INSERT INTO STATIC_DATA VALUES(" + maxId + ", " + parsedMessage.IMO + ", '" + parsedMessage.CallSign + "', '" + parsedMessage.Name + "', '" + parsedMessage.VesselType +  "', NULL, " + parsedMessage.Length + ", " + parsedMessage.Breadth + ", " + parsedMessage.Draught + ", '" + parsedMessage.Destination + "', '" + newETA + "', NULL)"
-              } else{
-                query2="INSERT INTO STATIC_DATA VALUES(" + maxId + ", " + parsedMessage.IMO + ", '" + parsedMessage.CallSign + "', '" + parsedMessage.Name + "', '" + parsedMessage.VesselType +  "', '" + parsedMessage.CargoType + "', " + parsedMessage.Length + ", " + parsedMessage.Breadth + ", " + parsedMessage.Draught + ", '" + parsedMessage.Destination + "', '" + newETA + "', NULL)"
-              }
-              console.log(query2)
-              return session3.sql(query2)
-              .execute();
-              
-            })
-            .then(session3 => {
-              let s = session3.fetchAll();
-              resolve(s)
-              //console.log(s)
-              //console.log()
-              //console.log("done7")
-            })
-            .catch(err => {reject(err);})
-          }
-          return session2.sql(query)
-          .execute();
-        })
-        .then(session2 => {
-          let s = session2.fetchAll();
-          resolve(s)
-          //console.log(s);
-          //console.log("done8")
-        })
-        .catch(err => {reject(err);})
-      })
-      .catch(err => {reject(err); })
-    });
-  }
-
+  /*
   readMostRecentPosition(MMSI) { 
     return new Promise((resolve, reject) => {
       const session = mysqlx.getSession(dbconfigs);
@@ -203,24 +34,22 @@ module.exports = class DOA {
       .catch(err => {reject(err); })
     });
   }
-*/
+  */
 
 //updated insertBatch function to use stubs for unit tests
   insertAISMessageBatch(batch) {
     try {
-      let array = JSON.parse( batch )
       if (this.stub) {
-        return array.length;
+        return batch.length;
       }
       else{
         return new Promise((resolve, reject) => {
           let error;
-          for(let message of array) {
+          for(let message of batch) {
             this.insertAISMessage(message).catch(err => {error = err});
-            //console.log("hello")
           }
           if (error) reject(error);
-          resolve(array.length);
+          resolve(batch.length);
         })
       }
     } catch (e){
@@ -228,18 +57,40 @@ module.exports = class DOA {
 		  return -1
     }
   }
-  
-  /*insertAISMessageBatch(batch) {
+
+  cleanupMessages(timestamp) {
     return new Promise((resolve, reject) => {
-      let error;
-      for(let message of batch) {
-        this.insertAISMessage(message).catch(err => {error = err});
-      }
-      if (error) reject(error);
-      resolve(batch.length);
-    })  
+      let connection = mysql.createConnection({
+        ...dbconfigs,
+        multipleStatements: true
+      });
+      
+      let now = new Date(timestamp);
+      connection.query(
+        `
+        DELETE FROM d_position_report 
+        WHERE Timestamp NOT BETWEEN ? AND ?;
+        DELETE FROM d_static_data 
+        WHERE Timestamp NOT BETWEEN ? AND ?;
+        `,
+        [
+          convertTimestamp(subMinutes(now, 5)),
+          convertTimestamp(now),
+          convertTimestamp(subMinutes(now, 5)),
+          convertTimestamp(now)
+        ]
+        ,
+        function (error, results, fields) {
+          if (error) reject(error);
+          let totalRowsAffected = 0;
+          for (let res of results) {
+            totalRowsAffected += res.affectedRows;
+          }
+          resolve(totalRowsAffected);
+          connection.destroy();
+        })
+    })
   }
-  */
 
   insertAISMessage(message) {
     return new Promise((resolve, reject) => {
@@ -349,7 +200,6 @@ module.exports = class DOA {
   }
 
   readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
-    
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
       var query=""
@@ -388,7 +238,6 @@ module.exports = class DOA {
             for (let i = 0; i<results.length; i++){
               array.push({"IMO":results[i].IMO,"Flag":results[i].Flag,"Name":results[i].Name, "Built":results[i].Built, "CallSign":results[i].CallSign, "Length":results[i].Length, "Breadth":results[i].Breadth, "Tonnage":results[i].Tonnage, "MMSI":results[i].MMSI,"Type":results[i].Type, "Status":results[i].Status, "Owner":results[i].Owner})
             }
-            
             resolve(array);
           }
           connection.destroy();
@@ -420,7 +269,6 @@ module.exports = class DOA {
         }
         else if (Name.length >0 && Country.length >0){
           let query1 =  "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + " AND Country=" + connection.escape(Country)
-          //console.log(query1)
           connection.query(
             query1,
             function (error, results, fields) {
@@ -428,7 +276,6 @@ module.exports = class DOA {
                 console.log("ERROR INSERTING POSITION REPORT")
                 reject(error);
               } else {
-                //console.log(results)
                 let array = [];
                 for (let i = 0; i<results.length; i++){
                   array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
@@ -441,7 +288,7 @@ module.exports = class DOA {
     })
   }
 
-  getVessels(tileId, scale, timestamp) {
+  getVessels(tileId, scale, timestamp) { // good chance this gonna be deleted
     return new Promise((resolve, reject) => {
       const session = mysqlx.getSession(dbconfigs);
       // we can query the tileId on map_view
@@ -474,5 +321,12 @@ module.exports = class DOA {
 };
 
 function convertTimestamp(timestamp) {
+  if (timestamp instanceof Date) { 
+    timestamp = timestamp.toISOString() 
+  }
   return timestamp.slice(0, 19).replace('T', ' ');
+}
+
+function subMinutes(date, minutes) {
+  return new Date(date.getTime() - minutes * 60000);
 }
