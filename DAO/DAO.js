@@ -203,56 +203,6 @@ module.exports = class DOA {
       .catch(err => {reject(err); })
     });
   }
-
-  readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
-    
-    return new Promise((resolve, reject) => {
-      const session = mysqlx.getSession(dbconfigs);
-      
-      session.then(session => {
-        var query=""
-        if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign == undefined){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI;
-        }
-        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign == undefined){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO;
-        }
-        else if (MMSI.toString().length >0 && IMO == undefined && Name.length >0 && CallSign == undefined){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "'";
-        }
-        else if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign.toString().length>0){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND CallSign=" + CallSign;;
-        }
-        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name.length >0 && CallSign == undefined){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "'";
-        }
-        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign.toString().length>0){
-            query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND CallSign=" + CallSign;
-       }
-        else if (MMSI.toString().length >0 && IMO == undefined && Name.length > 0 && CallSign.toString().length > 0){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "' AND CallSign=" + CallSign;
-        }
-        else if (MMSI.toString().length >0 && IMO.toString().length > 0 && Name.length > 0 && CallSign.toString().length> 0){
-          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "' AND CallSign=" + CallSign;
-        }
-        return session.sql(query)
-        .execute()
-      })
-      .then( res => {
-        let result = res.fetchAll();
-        let array = [];
-        for (let i = 0; i<result.length; i++){
-            array.push({"IMO":result[i][0],"Flag":result[i][1],"Name":result[i][2], "Built":result[i][3], "CallSign":result[i][4], "Length":result[i][5], 
-            "Breadth":result[i][6], "Tonnage":result[i][7], "MMSI":result[i][8],"Type":result[i][9], "Status":result[i][10], "Owner":result[i][11]})
-        }
-        resolve(array);
-        
-        console.log(JSON.stringify(array));
-        process.kill(process.pid, 'SIGTERM')
-      })
-      .catch(err => {reject(err); })
-    });
-  }
 */
 
 //updated insertBatch function to use stubs for unit tests
@@ -375,6 +325,78 @@ module.exports = class DOA {
       }
     })
   }
+
+  readMostRecentPositionAllShips() {
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      var query = "Select Max(Timestamp),VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI GROUP BY(VESSEL.MMSI);"
+      connection.query(
+        query,
+        function (error, results, fields) {
+          if (error) {
+            console.log("ERROR INSERTING POSITION REPORT")
+            reject(error);
+          }else{
+            let array = [];
+            for (let i = 0; i<results.length; i++){
+              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name})
+            }
+            resolve(array);
+          }
+          connection.destroy();
+        })
+    });
+  }
+
+  readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
+    
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      var query=""
+      if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign == undefined){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI;
+      }
+      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign == undefined){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO;
+      }
+      else if (MMSI.toString().length >0 && IMO == undefined && Name.length >0 && CallSign == undefined){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "'";
+      }
+      else if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign.toString().length>0){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND CallSign=" + CallSign;;
+      }
+      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name.length >0 && CallSign == undefined){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "'";
+      }
+      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign.toString().length>0){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND CallSign=" + CallSign;
+      }
+      else if (MMSI.toString().length >0 && IMO == undefined && Name.length > 0 && CallSign.toString().length > 0){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "' AND CallSign=" + CallSign;
+      }
+      else if (MMSI.toString().length >0 && IMO.toString().length > 0 && Name.length > 0 && CallSign.toString().length> 0){
+        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "' AND CallSign=" + CallSign;
+      }
+      connection.query(
+        query,
+        function (error, results, fields) {
+          if (error) {
+            console.log("ERROR INSERTING POSITION REPORT")
+            reject(error);
+          }else{
+            let array = [];
+            for (let i = 0; i<results.length; i++){
+              array.push({"IMO":results[i].IMO,"Flag":results[i].Flag,"Name":results[i].Name, "Built":results[i].Built, "CallSign":results[i].CallSign, "Length":results[i].Length, "Breadth":results[i].Breadth, "Tonnage":results[i].Tonnage, "MMSI":results[i].MMSI,"Type":results[i].Type, "Status":results[i].Status, "Owner":results[i].Owner})
+            }
+            
+            resolve(array);
+          }
+          connection.destroy();
+        }
+      )
+    });
+  }
+
   readAllPortsMatchingName(Name, Country){
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);

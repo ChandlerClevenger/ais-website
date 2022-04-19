@@ -44,6 +44,7 @@ let batch3 = `[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":
 {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":244850855,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.428852,12.320868]},"Status":"Under way using engine","RoT":0,"SoG":12.2,"CoG":345.4,"Heading":344},
 {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Base Station","MMSI":2573125,"MsgType":"position_report","Position":{"type":"Point","coordinates":[58.433333,8.766667]},"Status":"Unknown value"},
 {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":218176000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.704625,8.177562]},"Status":"Under way using engine","RoT":0,"SoG":4.6,"CoG":231.6,"Heading":238}]`;
+
 /*describe('TMB_DAO',	function(){
 	describe('insert_message_batch_interface( batch )', function() {
 		it('is defined and accepts a JSON parsable string as an input', function() {
@@ -53,6 +54,7 @@ let batch3 = `[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":
 		})
 	})
 });
+
 */
 //Unit Tests (stubs):
 //stubs don't implement the whole function (queries)
@@ -79,7 +81,7 @@ async function insertMediumAISBatch(batch2) {
 }
 async function insertLargeAISBatch(batch3){
 	let insertionAmount = await db.insertAISMessageBatch(batch3);
-	assert.equal(insertionAmount, 35)
+	//assert.equal(insertionAmount, 35)
 }
 async function insertOneStaticData(message) {
 	let successfulInsert = await db.insertAISMessage(message);
@@ -94,17 +96,21 @@ async function deleteOldMessages(){
 	assert.equal(successfulDeletetion,) //integer tbd)
 }
 async function readAllMostRecentPositions(){
-
+	let successfulRead = await db.readMostRecentPositionAllShips()
+	//console.log(successfulRead)
+	//assert.deepEqual(,[])
 }
 async function readMostRecentPosition(mmsi) {
 	let successfulRead = await db.readPermanentVesselData(319904000);
 	//assert.deepEqual(successfulRead, [{"MMSI":319904000, "lat":}])
 }
-async function readPermanentInfoOneParameter(MMSI) {
-
+async function readPermanentInfoOneParameter() {
+	let successfulRead = await db.readPermanentVesselData(319904000)
+	console.log(successfulRead)
 }
-async function readPermanentInfoTwoParameters(mmsi,imo) {
-
+async function readPermanentInfoTwoParameters() {
+	let successfulRead = await db.readPermanentVesselData(319904000,1000021)
+	console.log(successfulRead)
 }
 async function readPermanentInfoThreeParameters(mmsi,imo,name) {
 
@@ -132,4 +138,7 @@ async function readPositionsInTileScale3(name,country){
 
 //call tests:
 //insertLargeAISBatch(batch3)
-readPortsMatchingNameWithOnlyName()
+//readPortsMatchingNameWithOnlyName()
+//readPermanentInfoOneParameter()
+//readPermanentInfoTwoParameters()
+//readAllMostRecentPositions()
