@@ -11,17 +11,13 @@ let displayableVessels = {};
 setInterval(() => {
   $.ajax({
     type: "GET",
-    url: "http://localhost:3000/",
-    data: {
-      id: currentTileJSON.id,
-      scale: currentTileJSON.scale,
-      timestamp: `2020-11-18 ${getTime()}`,
-    },
+    url: "http://localhost:3000/vessel",
     success: function (vessels) {
-      updateDisplayableVessels(JSON.parse(vessels));
+      let vesselJSON = JSON.parse(vessels)
       undrawVessels();
-      for (let vessel of Object.keys(displayableVessels)) {
-        drawVessel(displayableVessels[vessel]);
+      for (let vessel of vesselJSON) {
+        drawVessel(vessel);
+        console.log(vessel)
       }
     },
     fail: function (err) {
@@ -75,12 +71,13 @@ function displayDefault() {
 }
 
 function drawVessel(vessel) {
+  console.log(vessel.long)
   if (
     !(
-      vessel[7] > currentTileJSON.image_west &&
-      vessel[7] < currentTileJSON.image_east &&
-      vessel[8] > currentTileJSON.image_south &&
-      vessel[8] < currentTileJSON.image_north
+      vessel.long > currentTileJSON.image_west &&
+      vessel.long < currentTileJSON.image_east &&
+      vessel.lat > currentTileJSON.image_south &&
+      vessel.lat < currentTileJSON.image_north
     )
   ) {
     return;
@@ -88,8 +85,8 @@ function drawVessel(vessel) {
 
   let boat = document.createElement("img");
   boat.setAttribute("src", "./boat.png");
-  let x = vessel[7];
-  let y = vessel[8];
+  let x = vessel.long;
+  let y = vessel.lat;
   let minLat = currentTileJSON.image_north;
   let maxLat = currentTileJSON.image_south;
   let maxLon = currentTileJSON.image_east;
