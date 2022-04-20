@@ -105,24 +105,36 @@ function handleGetVessel(req, res, receivedJSON) {
     let db = new DAO();
     res.writeHead(200, headers);
     //should probably check for if id exists
-    db.getVessels(
-      receivedJSON["id"],
-      receivedJSON["scale"],
-      decodeURIComponent(receivedJSON["timestamp"])
-    )
-      .then((vessels) => {
-        console.log(`Serving ${vessels.length} Vessels`);
-        res.end(JSON.stringify(vessels));
-      })
-      .catch((rej) => {
-        console.log(rej);
-        res.end("Failed to retreive vessels");
-      });
+    switch (receivedJSON) {
+      case (null):
+        db.readMostRecentPositionAllShips()
+        .then((vessels) => {
+          console.log(`Serving ${vessels.length} Vessels`);
+          res.end(JSON.stringify(vessels));
+        })
+        .catch((rej) => {
+          console.log(rej);
+          res.end("Failed to retreive vessels");
+        });
+        break;
+
+      default:
+        res.end("FAILURE");
+        break;
+    }
   });
 }
 
 function parseGetUrl(url) {
-  let [_, path, params] = url.match(/((?<=\/)\S*(?=\?))\?(\S*)/);
+  if (url.search(/\?/) != -1){
+    return parseGetWithParams(url);
+  } else {
+    return parseGetWithNoParams(url);
+  }
+}
+
+function parseGetWithParams(url) {
+  [_, path, params] = url.match(/((?<=\/)\S*(?=\?))\?(\S*)/);
   let split = params.split("&");
   let requestJSON = {};
   for (let pair of split) {
@@ -130,6 +142,11 @@ function parseGetUrl(url) {
     requestJSON[key] = val;
   }
   return [path.split("/"), requestJSON];
+}
+
+function parseGetWithNoParams(url) {
+  [path] = url.match(/((?<=\/)\S*)/);
+  return [path.split("/"), null];
 }
 
 function sendInvalidEndpoint(req, res) {
@@ -154,6 +171,7 @@ function cleanupTables() {
     .catch(rej => {
       console.log("FAILURE TO CLEAN MESSAGES!", rej);
     });
+    
   } else {
     console.error("TIMESTAMP IS INVALID!", timestamp);
   }
