@@ -100,9 +100,10 @@ async function readAllMostRecentPositions(){
 	//console.log(successfulRead)
 	//assert.deepEqual(,[])
 }
-async function readMostRecentPosition(mmsi) {
-	let successfulRead = await db.readPermanentVesselData(319904000);
-	//assert.deepEqual(successfulRead, [{"MMSI":319904000, "lat":}])
+async function readMostRecentPosition() {
+	let successfulRead = await db.readMostRecentPosition(246430000);
+	console.log(successfulRead)
+	//assert.deepEqual(successfulRead, {"MMSI":246430000,"lat":57.147058,"long":8.319127,"IMO":9248564})
 }
 async function readPermanentInfoOneParameter() {
 	let successfulRead = await db.readPermanentVesselData(319904000)
@@ -142,3 +143,6 @@ async function readPositionsInTileScale3(name,country){
 //readPermanentInfoOneParameter()
 //readPermanentInfoTwoParameters()
 //readAllMostRecentPositions()
+//readPortsMatchingNameWithNameAndCountry()
+//readMostRecentPosition()
+//readPermanentInfoOneParameter()
