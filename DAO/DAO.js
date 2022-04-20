@@ -156,7 +156,7 @@ module.exports = class DOA {
   readMostRecentPositionAllShips() {
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
-      var query = "Select Max(Timestamp),VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI GROUP BY(VESSEL.MMSI);"
+      var query = "Select Max(Timestamp),VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI GROUP BY(VESSEL.MMSI);"
       connection.query(
         query,
         function (error, results, fields) {
@@ -166,7 +166,7 @@ module.exports = class DOA {
           }else{
             let array = [];
             for (let i = 0; i<results.length; i++){
-              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name})
+              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG": results[i].CoG})
             }
             resolve(array);
           }

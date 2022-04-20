@@ -3,21 +3,19 @@ let lastClickedTile;
 let containedTiles = [];
 let currentTileJSON;
 let tileJSON;
-let basedate = new Date("2020-11-18 00:00:00");
-let timeOffset = 0;
-let speed = 1;
+let displayableVessels = [];
+let speed = 3;
 
-let displayableVessels = {};
 setInterval(() => {
   $.ajax({
     type: "GET",
     url: "http://localhost:3000/vessel",
     success: function (vessels) {
-      let vesselJSON = JSON.parse(vessels)
+      let vesselJSON = JSON.parse(vessels);
+      displayableVessels = vesselJSON;
       undrawVessels();
       for (let vessel of vesselJSON) {
         drawVessel(vessel);
-        console.log(vessel)
       }
     },
     fail: function (err) {
@@ -117,7 +115,7 @@ function drawVessel(vessel) {
   boat.style.setProperty(
     "transform",
     `translate(-${boatWidth / 2}px,-${boatHeight / 2}px)
-    rotate(${vessel[12]}deg)`
+    rotate(${vessel.CoG}deg)`
   );
   boat.setAttribute("data-imo", vessel[4]);
 
