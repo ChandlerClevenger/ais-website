@@ -11,30 +11,6 @@ module.exports = class DOA {
     return echo;
   }
   stub = false;
-  /*
-  readMostRecentPosition(MMSI) { 
-    return new Promise((resolve, reject) => {
-      const session = mysqlx.getSession(dbconfigs);
-      session.then(session => {
-        var idQuery = "SELECT Id FROM AIS_MESSAGE WHERE AIS_MESSAGE.MMSI=" + MMSI + " order by Timestamp Desc Limit 1";
-        return session.sql("SELECT Latitude, Longitude, Vessel_IMO FROM POSITION_REPORT, AIS_MESSAGE WHERE Id=(" + idQuery + ") AND AISMessage_Id=(" + idQuery + ")")	
-        .execute();
-      })
-      .then( res => {
-
-        let v = res.fetchAll();
-        let result = {
-          "MMSI": MMSI, "lat": v[0][0], "long": v[0][1], "IMO": v[0][2],
-        }
-        resolve(result);
-
-        console.log(JSON.stringify(result));
-        process.kill(process.pid, 'SIGTERM')
-      })
-      .catch(err => {reject(err); })
-    });
-  }
-  */
 
 //updated insertBatch function to use stubs for unit tests
   insertAISMessageBatch(batch) {
@@ -198,6 +174,28 @@ module.exports = class DOA {
         })
     });
   }
+
+  readMostRecentPosition(MMSI) { 
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      var query = "Select VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND VESSEL.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
+      connection.query(
+        query,
+        function (error, results, fields) {
+          if (error) {
+            console.log("ERROR INSERTING POSITION REPORT")
+            reject(error);
+          }else{
+            
+            let result = {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO}
+            //resolve(JSON.stringify(result));
+            resolve(result)
+          }
+          connection.destroy();
+        })
+    });
+  }
+
 
   readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
     return new Promise((resolve, reject) => {
