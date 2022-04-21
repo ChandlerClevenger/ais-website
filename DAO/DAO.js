@@ -196,7 +196,7 @@ module.exports = class DOA {
     });
   }
 
-
+  
   readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
@@ -242,6 +242,40 @@ module.exports = class DOA {
         }
       )
     });
+  }
+
+  //Read all most recent ship positions in the given tile
+  // uses the permanent, non-dynamic tables
+  readRecentPositionsInTile(tileId) {
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      let query = ""
+      if (tileId.toString().length == 1) {
+        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView1_Id=" + tileId + " GROUP BY(Vessel_IMO);"
+      }
+      else if (tileId.toString().length == 4) {
+        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView2_Id=" + tileId + " GROUP BY(Vessel_IMO);"
+      }
+      else if (tileId.toString().length == 5) {
+        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView3_Id=" + tileId + " GROUP BY(Vessel_IMO);"
+      }
+      connection.query(
+        query,
+        function(error, results, fields) {
+          if (error) {
+            console.log("ERROR INSERTING POSITION REPORT")
+            reject(error);
+          }else{
+            let array = [];
+            for (let i = 0; i<results.length; i++){
+              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].Vessel_IMO, "Name":results[i].Name})
+            }
+            resolve(array);
+          }
+          connection.destroy();
+        }
+      )
+    })
   }
 
   readAllPortsMatchingName(Name, Country){

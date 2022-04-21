@@ -6,8 +6,8 @@ let db = new DAO();
 
 //example insertion objects:
 let object1 = '{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}'
-let object2 = '{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}'
-let batch1 = '[{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}, {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}]'
+let object2 = {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}
+let batch1 = [{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}, {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}]
 let batch2 = '[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":218768000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.8001,10.146383]},"Status":"Under way sailing","RoT":0,"SoG":2.8,"CoG":151.6,"Heading":169},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":265011000,"MsgType":"static_data","IMO":8616087,"CallSign":"SBEN","Name":"SOFIA","VesselType":"Cargo","Length":72,"Breadth":11,"Draught":3.7,"Destination":"DK VEJ","ETA":"2020-11-18T10:00:00.000Z","A":59,"B":13,"C":6,"D":5},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219012302,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.127,12.309167]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":157,"Heading":193},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":2190045,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.471767,8.423305]},"Status":"Unknown value","SoG":0,"CoG":321.4},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":273418960,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.638938,11.375737]},"Status":"Under way sailing","RoT":0,"SoG":0,"CoG":180.7,"Heading":22}]';
 let batch3 = `[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":230006000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.394333,12.6615]},"Status":"Under way using engine","RoT":0,"SoG":18.4,"CoG":189.9,"Heading":191},
 {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":244234000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.175183,12.458667]},"Status":"Under way using engine","RoT":0,"SoG":11.8,"CoG":316.8,"Heading":313},
@@ -123,7 +123,9 @@ async function readMostRecentPositionMMSI(mmsi) {
 
 }
 async function readMostRecentPositionsInTile(tileId) {
-
+	let successfulRead = await db.readRecentPositionsInTile(tileId)
+	assert.equal(successfulRead.length, 5)
+	//console.log(successfulRead)
 }
 async function readPortsMatchingNameWithOnlyName() {
 	let successfulRead = await db.readAllPortsMatchingName('Nyborg');
@@ -146,3 +148,6 @@ async function readPositionsInTileScale3(name,country){
 //readPortsMatchingNameWithNameAndCountry()
 //readMostRecentPosition()
 //readPermanentInfoOneParameter()
+//insertSmallAISBatch(batch1)
+//insertOnePositionReport(object2)
+readMostRecentPositionsInTile(51381)
