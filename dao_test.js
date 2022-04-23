@@ -3,7 +3,7 @@ var assert = require('assert');
 
 let db = new DAO();
 //db.stub = true; // set the stub mode on the TMB; only uncomment this when doing unit testing (not integration tests)
-
+// set stub to true within each unit test function. unit tests should test two features: can be called with connection to database, and if it catches bad input
 //example insertion objects:
 let object1 = '{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}'
 let object2 = {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}
@@ -97,7 +97,7 @@ async function deleteOldMessages(){
 }
 async function readAllMostRecentPositions(){
 	let successfulRead = await db.readMostRecentPositionAllShips()
-	//console.log(successfulRead)
+	console.log(successfulRead)
 	//assert.deepEqual(,[])
 }
 async function readMostRecentPosition() {
@@ -110,33 +110,40 @@ async function readPermanentInfoOneParameter() {
 	console.log(successfulRead)
 }
 async function readPermanentInfoTwoParameters() {
-	let successfulRead = await db.readPermanentVesselData(319904000,1000021)
+	let successfulRead = await db.readPermanentVesselData(319904000,'Montkaj')
 	console.log(successfulRead)
 }
-async function readPermanentInfoThreeParameters(mmsi,imo,name) {
 
+async function readPermanentInfoThreeParameters() {
+	let successfulRead = await db.readPermanentVesselData(319904000,1000021,'Montkaj')
+	console.log(successfulRead)
 }
-async function readPermanentInfoAllParameters(mmsi,imo,name,callsign) {
 
+async function readPermanentInfoAllParameters() {
+	let successfulRead = await db.readPermanentVesselData(440007100,5275569,'Pesquera Hernan Cortes', 6287207)
+	console.log(successfulRead)
 }
 async function readMostRecentPositionMMSI(mmsi) {
 
 }
 async function readMostRecentPositionsInTile(tileId) {
 	let successfulRead = await db.readRecentPositionsInTile(tileId)
-	assert.equal(successfulRead.length, 5)
-	//console.log(successfulRead)
+	//assert.equal(successfulRead.length, 5)
+	console.log(successfulRead)
 }
 async function readPortsMatchingNameWithOnlyName() {
 	let successfulRead = await db.readAllPortsMatchingName('Nyborg');
+	console.log(successfulRead)
 	assert.deepEqual(successfulRead, [{"Id":381, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.298889, "Longitude":10.810833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312},{"Id":4970, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.306944, "Longitude":10.790833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312}])
 }
 async function readPortsMatchingNameWithNameAndCountry() {
 	let successfulRead = await db.readAllPortsMatchingName('Nyborg','Denmark');
 	assert.deepEqual(successfulRead, [{"Id":381, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.298889, "Longitude":10.810833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312},{"Id":4970, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.306944, "Longitude":10.790833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312}])
 }
-async function readPositionsInTileScale3(name,country){
-
+async function readPositionsInTileScale3(){
+	//let successfulRead = await db.readAllShipPositionsInScale3ContainingPort('Nyborg','Denmark')
+	let successfulRead = await db.readAllShipPositionsInScale3ContainingPort('Helsingborg','Sweden')
+	console.log(successfulRead)
 }
 
 //call tests:
@@ -150,4 +157,8 @@ async function readPositionsInTileScale3(name,country){
 //readPermanentInfoOneParameter()
 //insertSmallAISBatch(batch1)
 //insertOnePositionReport(object2)
-readMostRecentPositionsInTile(51381)
+//readMostRecentPositionsInTile(1)
+//readPositionsInTileScale3()
+//readAllMostRecentPositions()
+//readPermanentInfoThreeParameters()
+//readPermanentInfoAllParameters()

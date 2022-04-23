@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "jsdoc": "^3.6.10"
   }
 }

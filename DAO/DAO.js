@@ -156,12 +156,13 @@ module.exports = class DOA {
   readMostRecentPositionAllShips() {
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
-      var query = "Select Max(Timestamp),VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI GROUP BY(VESSEL.MMSI);"
+      var query = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI)"
+      
       connection.query(
         query,
         function (error, results, fields) {
           if (error) {
-            console.log("ERROR INSERTING POSITION REPORT")
+            console.log("ERROR READING POSITIONS")
             reject(error);
           }else{
             let array = [];
@@ -183,7 +184,7 @@ module.exports = class DOA {
         query,
         function (error, results, fields) {
           if (error) {
-            console.log("ERROR INSERTING POSITION REPORT")
+            console.log("ERROR READING POSITION")
             reject(error);
           }else{
             
@@ -196,40 +197,44 @@ module.exports = class DOA {
     });
   }
 
-  
-  readPermanentVesselData(MMSI, IMO, Name, CallSign) { // need to fix optional parameters
+  readPermanentVesselData(MMSI, IMO=0, Name=0, CallSign=0) { // need to fix optional parameters
     return new Promise((resolve, reject) => {
-      let connection = mysql.createConnection(dbconfigs);
       var query=""
-      if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign == undefined){
+      let connection = mysql.createConnection(dbconfigs);
+      if ((arguments.length) ==1){
         query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI;
       }
-      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign == undefined){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO;
+      else if (arguments.length == 2) {
+        if (typeof arguments[1] === 'string') {
+          Name = arguments[1]
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "'";
+        }
+        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == 0 && CallSign == 0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO;
+        }
+        else if (MMSI.toString().length >0 && IMO == 0 && Name == 0 && CallSign.toString().length>0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND CallSign=" + CallSign;;
+        }
       }
-      else if (MMSI.toString().length >0 && IMO == undefined && Name.length >0 && CallSign == undefined){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "'";
-      }
-      else if (MMSI.toString().length >0 && IMO == undefined && Name == undefined && CallSign.toString().length>0){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND CallSign=" + CallSign;;
-      }
-      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name.length >0 && CallSign == undefined){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "'";
-      }
-      else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == undefined && CallSign.toString().length>0){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND CallSign=" + CallSign;
-      }
-      else if (MMSI.toString().length >0 && IMO == undefined && Name.length > 0 && CallSign.toString().length > 0){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "' AND CallSign=" + CallSign;
-      }
-      else if (MMSI.toString().length >0 && IMO.toString().length > 0 && Name.length > 0 && CallSign.toString().length> 0){
-        query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "' AND CallSign=" + CallSign;
+      else {
+        if (MMSI.toString().length >0 && IMO.toString().length >0 && Name.length >0 && CallSign == 0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "'";
+        }
+        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == 0 && CallSign.toString().length>0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND CallSign=" + CallSign;
+        }
+        else if (MMSI.toString().length >0 && IMO == 0 && Name.length > 0 && CallSign.toString().length > 0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "' AND CallSign=" + CallSign;
+        }
+        else if (MMSI.toString().length >0 && IMO.toString().length > 0 && Name.length > 0 && CallSign.toString().length> 0){
+          query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "' AND CallSign=" + CallSign;
+        }
       }
       connection.query(
         query,
         function (error, results, fields) {
           if (error) {
-            console.log("ERROR INSERTING POSITION REPORT")
+            console.log("ERROR READING VESSEL INFORMATION")
             reject(error);
           }else{
             let array = [];
@@ -244,23 +249,18 @@ module.exports = class DOA {
     });
   }
 
-  //Read all most recent ship positions in the given tile
-  // uses the permanent, non-dynamic tables
   readRecentPositionsInTile(tileId) {
     return new Promise((resolve, reject) => {
-      let connection = mysql.createConnection(dbconfigs);
-      let query = ""
-      if (tileId.toString().length == 1) {
-        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView1_Id=" + tileId + " GROUP BY(Vessel_IMO);"
-      }
-      else if (tileId.toString().length == 4) {
-        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView2_Id=" + tileId + " GROUP BY(Vessel_IMO);"
-      }
-      else if (tileId.toString().length == 5) {
-        query = "Select Max(Timestamp), ais_message.MMSI, Latitude, Longitude, Vessel_IMO, Name from vessel, ais_message, position_report where Id=position_report.AisMessage_Id AND Vessel_IMO=IMO AND MapView3_Id=" + tileId + " GROUP BY(Vessel_IMO);"
-      }
+      //let connection = mysql.createConnection(dbconfigs);
+      let connection = mysql.createConnection({
+        ...dbconfigs,
+        multipleStatements: true
+      });
+      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select LongitudeE from map_view where Id=" + tileId + ") "
+      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+      
       connection.query(
-        query,
+        query2,
         function(error, results, fields) {
           if (error) {
             console.log("ERROR INSERTING POSITION REPORT")
@@ -268,16 +268,16 @@ module.exports = class DOA {
           }else{
             let array = [];
             for (let i = 0; i<results.length; i++){
-              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].Vessel_IMO, "Name":results[i].Name})
+              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name})
             }
-            resolve(array);
+            resolve(array)
           }
           connection.destroy();
         }
       )
     })
   }
-
+  
   readAllPortsMatchingName(Name, Country){
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
@@ -317,6 +317,62 @@ module.exports = class DOA {
               connection.destroy();
             })
         }
+    })
+  }
+
+  //Read all ship positions in the tile of scale 3 containing the given port
+  readAllShipPositionsInScale3ContainingPort(portName, country) {
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection(dbconfigs);
+      
+        let query1= "SELECT * FROM aistestdata.port where Name='" + portName + "' AND Country='" + country + "'";
+        connection.query(
+          query1,
+          function (error, results, fields) {
+            if (error) {
+              console.log("ERROR INSERTING POSITION REPORT")
+              reject(error);
+            } else {
+              let portCount = results.length;
+              
+              if (portCount == 1) {
+                
+                let connection2 = mysql.createConnection(dbconfigs);
+                let tileId = results[0].MapView3_Id
+                let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude<(Select LongitudeE from map_view where Id=" + tileId + ") "
+                + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+                connection2.query(
+                  query2,
+                  function (error, results, fields) {
+                    if (error) {
+                      console.log("ERROR INSERTING POSITION REPORT")
+                      reject(error);
+                    } else {
+                      let array = [];
+                      for (let i = 0; i<results.length; i++){
+                        array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO})
+                      }
+                      resolve(array)
+                    }
+                    connection2.destroy();
+                  }
+                )
+              }
+              else if (portCount >1){
+                
+                let array = [];
+                for (let i = 0; i<portCount; i++){
+                  array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
+                }
+                console.log(array)
+                resolve(array);
+              }
+              //console.log(results.length)
+              
+            }
+            connection.destroy();
+          })
+        
     })
   }
 
