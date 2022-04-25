@@ -15,7 +15,12 @@ module.exports = class DOA {
   insertAISMessageBatch(batch) {
     try {
       if (this.stub) {
-        return batch.length;
+        if(typeof batch == 'object'){
+          return batch.length;
+        }
+        else{
+          return -1
+        }
       }
       else{
         return new Promise((resolve, reject) => {
@@ -78,7 +83,7 @@ module.exports = class DOA {
   insertAISMessage(message) {
     try{
       if (this.stub) {
-        return typeof message;
+        return message.constructor;
       }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection(dbconfigs);
@@ -196,24 +201,29 @@ module.exports = class DOA {
 
   readMostRecentPosition(MMSI) { 
     try{
-      return new Promise((resolve, reject) => {
-        let connection = mysql.createConnection(dbconfigs);
-        var query = "Select VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND VESSEL.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
-        connection.query(
-          query,
-          function (error, results, fields) {
-            if (error) {
-              console.log("ERROR INSERTING POSITION REPORT")
-              reject(error);
-            }else{
-              
-              let result = {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO}
-              //resolve(JSON.stringify(result));
-              resolve(result)
-            }
-            connection.destroy();
-          })
-      });
+      if (this.stub) {
+        return typeof MMSI;
+      }
+      else{
+        return new Promise((resolve, reject) => {
+          let connection = mysql.createConnection(dbconfigs);
+          var query = "Select VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND VESSEL.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
+          connection.query(
+            query,
+            function (error, results, fields) {
+              if (error) {
+                console.log("ERROR INSERTING POSITION REPORT")
+                reject(error);
+              }else{
+                
+                let result = {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO}
+                //resolve(JSON.stringify(result));
+                resolve(result)
+              }
+              connection.destroy();
+            })
+        });
+      }
     }
     catch (e){
       console.log("Error:" + e)
@@ -224,6 +234,9 @@ module.exports = class DOA {
 
   readPermanentVesselData(MMSI, IMO, Name, CallSign) {
     try{
+      if (this.stub) {
+        return [typeof MMSI, typeof IMO, typeof Name, typeof CallSign];
+      }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection(dbconfigs);
         var query = "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + (IMO ? " AND IMO=" + IMO: "") + (Name ? " AND Name='" + Name : "") + (CallSign ? "' AND CallSign=" + CallSign : "");
@@ -253,10 +266,13 @@ module.exports = class DOA {
 
   readAllPortsMatchingName(Name, Country){
     try{
-      return new Promise((resolve, reject) => {
-        let connection = mysql.createConnection(dbconfigs);
-        if (Name.length >0 && Country == undefined){
-          let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name)
+      if (this.stub) {
+        return [typeof Name, typeof Country];
+      }
+      else{
+        return new Promise((resolve, reject) => {
+          let connection = mysql.createConnection(dbconfigs);
+          let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + (Country ? " AND Country=" + connection.escape(Country) : "")
           connection.query(
             query1,
             function (error, results, fields) {
@@ -272,26 +288,8 @@ module.exports = class DOA {
               }
               connection.destroy();
             })
-          }
-          else if (Name.length >0 && Country.length >0){
-            let query1 =  "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + " AND Country=" + connection.escape(Country)
-            connection.query(
-              query1,
-              function (error, results, fields) {
-                if (error) {
-                  console.log("ERROR INSERTING POSITION REPORT")
-                  reject(error);
-                } else {
-                  let array = [];
-                  for (let i = 0; i<results.length; i++){
-                    array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
-                  }
-                  resolve(array);
-                }
-                connection.destroy();
-              })
-          }
-      })
+        })
+      }
     }
     catch(e){
       console.log("Error:" + e)
@@ -300,6 +298,7 @@ module.exports = class DOA {
   }
 
   getVessels(tileId, scale, timestamp) { // good chance this gonna be deleted
+    try{
     return new Promise((resolve, reject) => {
       const session = mysqlx.getSession(dbconfigs);
       // we can query the tileId on map_view
@@ -328,6 +327,11 @@ module.exports = class DOA {
           reject(error);
         });
     });
+  } 
+  catch(e){
+      console.log("Error:" + e)
+		  return -1
+    }
   }
 };
 

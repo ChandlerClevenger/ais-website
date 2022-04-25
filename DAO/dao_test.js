@@ -1,5 +1,6 @@
-const DAO = require("./DAO/DAO.js");
+const DAO = require("./DAO.js");
 var assert = require('assert');
+var db = new DAO();
 
 //example insertion objects:
 let object1 = '{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}'
@@ -57,15 +58,140 @@ let batch3 = [{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":2
 //stubs don't implement the whole function (queries)
 
 async function batchInsertionJSON(){
-	var db = new DAO();
-	let insertionCheck = await db.insertAISMessageBatch(batch1);
-	assert.equal(insertionCheck,2)
+	let messageLength = await db.insertAISMessageBatch(batch1);
+	assert.equal(messageLength, 2)
 }
 
 async function batchInsertionIncorrectInput(){
-	let insertionCheck = await db.insertAISMessageBatch("lol")
-	assert.equal(insertionCheck, -1)
+	let messageLength = await db.insertAISMessageBatch("stringMessage")
+	assert.equal(messageLength, -1)
 }
+
+async function cleanupStringTimestamp(){
+	let messageType = await db.cleanupMessages("2020-11-18T00:00:00.000Z")
+	assert.equal(messageType, "string")
+}
+
+async function cleanupIncorrectInput(){
+	let messageType = await db.cleanupMessages(1602932938)
+	assert.notEqual(messageType, "string")
+}
+
+async function insertAISMessageJSON(){
+	let messageType = await db.insertAISMessage(batch1[0])
+	assert.equal(messageType, Object)
+}
+
+async function insertAISMessageIncorrectInput(){
+	let messageType = await db.insertAISMessage(["{Timestamp: '2020-11-18T00:00:00.000Z'}", "{Timestamp: '2020-11-18T00:00:00.000Z'}"])
+	assert.notEqual(messageType, Object)
+}
+
+async function readMostRecentPositionMMSI(){
+	let messageType = await db.readMostRecentPosition(2123812)
+	assert.equal(messageType, "number")
+}
+
+async function readMostRecentPositionIncorrectInput(){
+	let messageType = await db.readMostRecentPosition({"MMSI": 212394})
+	assert.notEqual(messageType, "number")
+}
+
+async function readPermanentVesselDataOneParam(){
+	let messageTypes = await db.readPermanentVesselData(319904000)
+	assert.deepEqual(messageTypes, ["number", 'undefined', 'undefined', 'undefined'])
+}
+
+async function readPermanentVesselDataTwoParams(){
+	let messageTypes = await db.readPermanentVesselData(319904000,1000021)
+	assert.deepEqual(messageTypes, ["number", "number", 'undefined', 'undefined'])
+}
+
+async function readPermanentVesselDataThreeParams(){
+	let messageTypes = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
+	assert.deepEqual(messageTypes, ["number", "number", "string", 'undefined'])
+}
+
+async function readPermanentVesselDataAllParams(){
+	let messageTypes = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
+	assert.deepEqual(messageTypes, ["number", "number", "string", "string"])
+}
+
+async function readPermanentVesselDataNoParams(){
+	let messageTypes = await db.readPermanentVesselData()
+	assert.deepEqual(messageTypes, ['undefined', 'undefined', 'undefined', 'undefined'])
+}
+
+async function readAllPortsMatchingNameOneParam(){
+	let messageTypes = await db.readAllPortsMatchingName("Montkaj")
+	assert.deepEqual(messageTypes, ["string", 'undefined'])
+}
+
+async function readAllPortsMatchingNameBothParams(){
+	let messageTypes = await db.readAllPortsMatchingName("Montkaj", "Peru")
+	assert.deepEqual(messageTypes, ["string", "string"])
+}
+
+async function readAllPortsMatchingNameWrongParams(){
+	let messageTypes = await db.readAllPortsMatchingName("Montkaj", "Peru")
+	assert.notDeepEqual(messageTypes, ["number", "number"])
+}
+
+function callUnitTests(){
+	db.stub = true;
+	batchInsertionJSON();
+	batchInsertionIncorrectInput();
+	cleanupStringTimestamp();
+	cleanupIncorrectInput();
+	insertAISMessageJSON();
+	insertAISMessageIncorrectInput();
+	readMostRecentPositionMMSI();
+	readMostRecentPositionIncorrectInput();
+	readPermanentVesselDataOneParam();
+	readPermanentVesselDataTwoParams();
+	readPermanentVesselDataThreeParams();
+	readPermanentVesselDataAllParams();
+	readPermanentVesselDataNoParams();
+	readAllPortsMatchingNameOneParam();
+	readAllPortsMatchingNameBothParams();
+	readAllPortsMatchingNameWrongParams();
+}
+
+async function integrationTest(){
+	db.stub = false;
+	
+	const readMostRecentPositionNull =  await db.readPermanentVesselData(batch3[0].MMSI) 
+	console.log(readMostRecentPositionNull)
+	const insertion = await db.insertAISMessageBatch(batch3)
+	assert.equal(insertion, 35)
+	const readMostRecentPosition =  await db.readPermanentVesselData(batch3[0].MMSI) 
+	assert.equal(insertion.IMO, batch3[0].IMO)
+	const readVesselData = await db.readPermanentVesselData(batch3[0].MMSI, batch3[0].IMO, batch3[0].Name) 
+	assert.equal(insertion.Flag, batch3[0].Flag)
+	const cleanup = await db.cleanupMessages(batch3[0].Timestamp)
+	//const readPorts = await db.readAllPortsMatchingName()
+	//console.log(readPorts);
+}
+
+callUnitTests();
+integrationTest();
+
+//readPermanentInfoTwoParameters()
+//readAllMostRecentPositions()
+//readPortsMatchingNameWithNameAndCountry()
+//readMostRecentPosition()
+//readPermanentInfoOneParameter()
+//readLastFivePositions()
+//insertSmallAISBatch(batch1).then(readPermanentInfoOneParameter(319904000))
+
+// readPermanentInfoTwoParameters(319904000,1000021) 
+// readPermanentInfoThreeParameters(319904000,1000021,"Montkaj") 
+// readPermanentInfoAllParameters(319904000,1000021,"Montkaj", undefined) 
+
+
+
+
+
 
 async function insertSmallAISBatch(batch) {
 	let insertionAmount = await db.insertAISMessageBatch(batch);
@@ -128,40 +254,3 @@ async function readPortsMatchingNameWithNameAndCountry() {
 	let successfulRead = await db.readAllPortsMatchingName('Nyborg','Denmark');
 	assert.deepEqual(successfulRead, [{"Id":381, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.298889, "Longitude":10.810833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312},{"Id":4970, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.306944, "Longitude":10.790833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312}])
 }
-
-function callStubTests(){
-	db.stub = true;
-	batchInsertionJSONParsableString();
-}
-
-function callUnitTests(){
-	db.stub = false;
-	batchInsertionIncorrectInput();
-	// insertSmallAISBatch();
-	// insertMediumAISBatch();
-	// insertLargeAISBatch();
-	// insertOneStaticData();
-	// insertOnePositionReport();
-}
-
-//callUnitTests();
-
-async function integrationTest(){
-	const insertion = await db.insertAISMessageBatch(batch3)
-	const read = await db.readPermanentVesselData(batch3[0]["MMSI"], batch3[0]["IMO"], batch3[0]["Name"])
-	console.log(read)
-}
-
-integrationTest();
-
-//readPermanentInfoTwoParameters()
-//readAllMostRecentPositions()
-//readPortsMatchingNameWithNameAndCountry()
-//readMostRecentPosition()
-//readPermanentInfoOneParameter()
-//readLastFivePositions()
-//insertSmallAISBatch(batch1).then(readPermanentInfoOneParameter(319904000))
-
-// readPermanentInfoTwoParameters(319904000,1000021) 
-// readPermanentInfoThreeParameters(319904000,1000021,"Montkaj") 
-// readPermanentInfoAllParameters(319904000,1000021,"Montkaj", undefined) 
