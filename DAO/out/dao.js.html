@@ -1,4 +1,32 @@
-/**
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: dao.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: dao.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
  * @file Milestone 4 - Option C. 
  * This DAO manages AIS messages coming in and out of the mysql database, and also reads information about certain vessels. 
  * All functions of priority 1 and 2 are completed fully. 
@@ -142,7 +170,7 @@ module.exports = class DOA {
             {
             Timestamp : convertTimestamp(message.Timestamp),
             MMSI : message.MMSI ? message.MMSI : null, 
-            IMO :(message.IMO && message.IMO != "Unknown") ? message.IMO : null, 
+            IMO :(message.IMO &amp;&amp; message.IMO != "Unknown") ? message.IMO : null, 
             Name : message.Name ? message.Name : null, 
             Class : message.Class ? message.Class : null, 
             CallSign : message.CallSign ? message.CallSign : null, 
@@ -194,7 +222,7 @@ module.exports = class DOA {
             reject(error);
           }else{
             let array = [];
-            for (let i = 0; i<results.length; i++){
+            for (let i = 0; i&lt;results.length; i++){
               array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG": results[i].CoG})
             }
             resolve(array);
@@ -251,24 +279,24 @@ module.exports = class DOA {
           Name = arguments[1]
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "'";
         }
-        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == 0 && CallSign == 0){
+        else if (MMSI.toString().length >0 &amp;&amp; IMO.toString().length >0 &amp;&amp; Name == 0 &amp;&amp; CallSign == 0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO;
         }
-        else if (MMSI.toString().length >0 && IMO == 0 && Name == 0 && CallSign.toString().length>0){
+        else if (MMSI.toString().length >0 &amp;&amp; IMO == 0 &amp;&amp; Name == 0 &amp;&amp; CallSign.toString().length>0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND CallSign=" + CallSign;;
         }
       }
       else {
-        if (MMSI.toString().length >0 && IMO.toString().length >0 && Name.length >0 && CallSign == 0){
+        if (MMSI.toString().length >0 &amp;&amp; IMO.toString().length >0 &amp;&amp; Name.length >0 &amp;&amp; CallSign == 0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "'";
         }
-        else if (MMSI.toString().length >0 && IMO.toString().length >0 && Name == 0 && CallSign.toString().length>0){
+        else if (MMSI.toString().length >0 &amp;&amp; IMO.toString().length >0 &amp;&amp; Name == 0 &amp;&amp; CallSign.toString().length>0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND CallSign=" + CallSign;
         }
-        else if (MMSI.toString().length >0 && IMO == 0 && Name.length > 0 && CallSign.toString().length > 0){
+        else if (MMSI.toString().length >0 &amp;&amp; IMO == 0 &amp;&amp; Name.length > 0 &amp;&amp; CallSign.toString().length > 0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND Name='" + Name + "' AND CallSign=" + CallSign;
         }
-        else if (MMSI.toString().length >0 && IMO.toString().length > 0 && Name.length > 0 && CallSign.toString().length> 0){
+        else if (MMSI.toString().length >0 &amp;&amp; IMO.toString().length > 0 &amp;&amp; Name.length > 0 &amp;&amp; CallSign.toString().length> 0){
           query= "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + " AND IMO=" + IMO + " AND Name='" + Name + "' AND CallSign=" + CallSign;
         }
       }
@@ -280,7 +308,7 @@ module.exports = class DOA {
             reject(error);
           }else{
             let array = [];
-            for (let i = 0; i<results.length; i++){
+            for (let i = 0; i&lt;results.length; i++){
               array.push({"IMO":results[i].IMO,"Flag":results[i].Flag,"Name":results[i].Name, "Built":results[i].Built, "CallSign":results[i].CallSign, "Length":results[i].Length, "Breadth":results[i].Breadth, "Tonnage":results[i].Tonnage, "MMSI":results[i].MMSI,"Type":results[i].Type, "Status":results[i].Status, "Owner":results[i].Owner})
             }
             resolve(array);
@@ -303,8 +331,8 @@ module.exports = class DOA {
         ...dbconfigs,
         multipleStatements: true
       });
-      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select LongitudeE from map_view where Id=" + tileId + ") "
-      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude &lt;(Select LongitudeE from map_view where Id=" + tileId + ") "
+      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude&lt;(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
       
       connection.query(
         query2,
@@ -314,7 +342,7 @@ module.exports = class DOA {
             reject(error);
           }else{
             let array = [];
-            for (let i = 0; i<results.length; i++){
+            for (let i = 0; i&lt;results.length; i++){
               array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name})
             }
             resolve(array)
@@ -334,7 +362,7 @@ module.exports = class DOA {
   readAllPortsMatchingName(Name, Country){
     return new Promise((resolve, reject) => {
       let connection = mysql.createConnection(dbconfigs);
-      if (Name.length >0 && Country == undefined){
+      if (Name.length >0 &amp;&amp; Country == undefined){
         let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name)
         connection.query(
           query1,
@@ -344,7 +372,7 @@ module.exports = class DOA {
               reject(error);
             } else {
               let array = [];
-              for (let i = 0; i<results.length; i++){
+              for (let i = 0; i&lt;results.length; i++){
                 array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
               }
               resolve(array);
@@ -352,7 +380,7 @@ module.exports = class DOA {
             connection.destroy();
           })
         }
-        else if (Name.length >0 && Country.length >0){
+        else if (Name.length >0 &amp;&amp; Country.length >0){
           let query1 =  "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + " AND Country=" + connection.escape(Country)
           connection.query(
             query1,
@@ -362,7 +390,7 @@ module.exports = class DOA {
                 reject(error);
               } else {
                 let array = [];
-                for (let i = 0; i<results.length; i++){
+                for (let i = 0; i&lt;results.length; i++){
                   array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
                 }
                 resolve(array);
@@ -399,8 +427,8 @@ module.exports = class DOA {
                 
                 let connection2 = mysql.createConnection(dbconfigs);
                 let tileId = results[0].MapView3_Id
-                let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude<(Select LongitudeE from map_view where Id=" + tileId + ") "
-                + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+                let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude&lt;(Select LongitudeE from map_view where Id=" + tileId + ") "
+                + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude&lt;(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
                 connection2.query(
                   query2,
                   function (error, results, fields) {
@@ -409,7 +437,7 @@ module.exports = class DOA {
                       reject(error);
                     } else {
                       let array = [];
-                      for (let i = 0; i<results.length; i++){
+                      for (let i = 0; i&lt;results.length; i++){
                         array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO})
                       }
                       resolve(array)
@@ -421,7 +449,7 @@ module.exports = class DOA {
               else if (portCount >1){
                 
                 let array = [];
-                for (let i = 0; i<portCount; i++){
+                for (let i = 0; i&lt;portCount; i++){
                   array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
                 }
                 console.log(array)
@@ -477,4 +505,26 @@ function convertTimestamp(timestamp) {
 
 function subMinutes(date, minutes) {
   return new Date(date.getTime() - minutes * 60000);
-}
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#cleanupMessages">cleanupMessages</a></li><li><a href="global.html#insertAISMessage">insertAISMessage</a></li><li><a href="global.html#insertAISMessageBatch">insertAISMessageBatch</a></li><li><a href="global.html#readAllPortsMatchingName">readAllPortsMatchingName</a></li><li><a href="global.html#readAllShipPositionsInScale3ContainingPort">readAllShipPositionsInScale3ContainingPort</a></li><li><a href="global.html#readMostRecentPosition">readMostRecentPosition</a></li><li><a href="global.html#readMostRecentPositionAllShips">readMostRecentPositionAllShips</a></li><li><a href="global.html#readPermanentVesselData">readPermanentVesselData</a></li><li><a href="global.html#readRecentPositionsInTile">readRecentPositionsInTile</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.10</a> on Mon Apr 25 2022 10:44:15 GMT-0400 (Eastern Daylight Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
