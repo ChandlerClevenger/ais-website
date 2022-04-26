@@ -1,5 +1,6 @@
 const http = require("http");
 const DAO = require("../DAO/DAO.js");
+const db = new DAO();
 const headers = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "POST, GET",
@@ -8,10 +9,11 @@ const headers = {
 // clean up then set 5 min cleanup
 // timestamp is updated by feeder
 let timestamp = "2020-11-18T00:00:00.000Z";
+const deleteMessegesEvery = 1; // minute(s)
 cleanupTables();
 setInterval(()=> {
   cleanupTables();
-}, 300000);
+}, deleteMessegesEvery * 60000);
 
 http
   .createServer((req, res) => {
@@ -39,11 +41,25 @@ function handleGET(req, res) {
   switch (pathParts.shift()) {
     case "vessel":
       // prevents access from invalid paths
+      if (pathParts.length == 0) {
+        handleGetVessel(req, res, receivedJSON);
+
+      } else if (pathParts.shift() == "data") {
+        if (pathParts.length != 0) return sendInvalidEndpoint(req, res);
+        handleGetVesselData(req, res, receivedJSON);
+
+      } else {
+        sendInvalidEndpoint(req, res);
+      }
+      break;
+
+    case "port":
+      // prevents access from invalid paths
       if (pathParts.length) {
         sendInvalidEndpoint(req, res);
         break;
       }
-      handleGetVessel(req, res, receivedJSON);
+      handleGetPortByName(req, res, receivedJSON);
       break;
 
     default:
@@ -79,7 +95,6 @@ function handlePostAISFeed(req, res, pathParts) {
       vessels = JSON.parse(data.toString());
     });
     req.on("end", () => {
-      let db = new DAO();
       db.insertAISMessageBatch(vessels)
       .then((result) => {
         console.log("Inserted", result, "AIS Messages")
@@ -99,29 +114,71 @@ function handlePostAISFeed(req, res, pathParts) {
 }
 
 function handleGetVessel(req, res, receivedJSON) {
-  req.on("data", (data) => {}); // no clue why you must read this data, but just gotta
-
-  req.on("end", () => {
-    let db = new DAO();
-    res.writeHead(200, headers);
-    //should probably check for if id exists
-    switch (receivedJSON) {
-      case (null):
-        db.readMostRecentPositionAllShips()
-        .then((vessels) => {
-          console.log(`Serving ${vessels.length} Vessels`);
-          res.end(JSON.stringify(vessels));
-        })
-        .catch((rej) => {
-          console.log(rej);
-          res.end("Failed to retreive vessels");
-        });
-        break;
-
-      default:
-        res.end("FAILURE");
-        break;
+  res.writeHead(200, headers);
+  //should probably check for if id exists
+  if (receivedJSON == null) {
+    db.readMostRecentPositionAllShips()
+    .then((vessels) => {
+      console.log(`Serving ${vessels.length} Vessels`);
+      res.end(JSON.stringify(vessels));
+    })
+    .catch((rej) => {
+      console.log(rej);
+      res.end("Failed to retreive vessels");
+    });
+    return;
+  } else if (receivedJSON.hasOwnProperty('tileId')) {
+    // If get with tileId
+    let tileId = new Number(receivedJSON.tileId);
+    if (tileId) {
+      db.readRecentPositionsInTile(tileId)
+      .then(vessels => {
+        console.log(`Serving ${vessels.length} Vessels in tile ${tileId}`);
+        res.end(JSON.stringify(vessels));
+      });
+    } else {
+      sendFailure(res, "Param is not an integer!");
     }
+    
+  } else {
+    sendFailure(res, "Check parameters!");
+  }
+}
+
+function handleGetVesselData(req, res, receivedJSON) {
+  if (!receivedJSON) {
+    sendInvalidParameters(res);
+    return;
+  }
+  let MMSI = receivedJSON.hasOwnProperty("MMSI") ? receivedJSON.MMSI : null;
+  if (MMSI) {
+    let IMO = receivedJSON.hasOwnProperty("IMO") ? receivedJSON.IMO : null;
+    let name = receivedJSON.hasOwnProperty("name") ? receivedJSON.name : null;
+    let callsign = receivedJSON.hasOwnProperty("callsign") ? receivedJSON.callsign : null;
+    db.readPermanentVesselData(MMSI, IMO, name, callsign)
+    .then(vesselData => {
+      res.end(JSON.stringify(vesselData));
+      console.log(`Serving vessel static data for vessel MMSI: ${MMSI}`);
+    })
+  } else {
+    sendInvalidParameters(res, "Must include an MMSI!");
+  }
+}
+
+function handleGetPortByName(req, res, receivedJSON) {
+  let name = receivedJSON.hasOwnProperty("name") ? receivedJSON.name : null;
+  let country = receivedJSON.hasOwnProperty("country") ? receivedJSON.country : null;
+  if (!name) {
+    sendInvalidParameters(res);
+    return;
+  }
+  db.readAllPortsMatchingName(name, country)
+  .then((ports) => {
+    res.end(JSON.stringify(ports));
+  })
+  .catch((error) => {
+    console.log("ERROR GETTING PORT.", error);
+    sendFailure("ERROR GETTING PORT.");
   });
 }
 
@@ -153,6 +210,18 @@ function sendInvalidEndpoint(req, res) {
   // Failure to match any endpoint
   res.writeHead(400, { "Content-Type": "text/plain", ...headers });
   res.end(`${req.url} is an Invalid Endpoint!`);
+}
+
+function sendInvalidParameters(res) {
+  // Failure to match any endpoint
+  res.writeHead(400, { "Content-Type": "text/plain", ...headers });
+  res.end(`Please check your parameters!`);
+}
+
+function sendFailure(res, msg) {
+  // Failure to match any endpoint
+  res.writeHead(400, { "Content-Type": "text/plain", ...headers });
+  res.end(msg);
 }
 
 function parsePostUrl(url) {
