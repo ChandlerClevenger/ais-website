@@ -274,7 +274,7 @@ module.exports = class DOA {
  * @returns {JSON} json vessel document - Vessel document of JSON form that contains the vessel information from the database.
  */
 
-  readPermanentVesselData(MMSI, IMO, Name, CallSign) {
+  readPermanentVesselData(MMSI, IMO=0, Name=0, CallSign=0) {
     try{
       if (this.stub) {
         return [typeof MMSI, typeof IMO, typeof Name, typeof CallSign];
