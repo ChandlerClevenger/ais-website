@@ -14,9 +14,6 @@ let dbconfigs = {
   database: config.db.schema
 };
 module.exports = class DOA {
-  getTest(echo) {
-    return echo;
-  }
   stub = false;
 
  /**
@@ -284,7 +281,7 @@ module.exports = class DOA {
       }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection(dbconfigs);
-        var query = "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + (IMO ? " AND IMO=" + IMO: "") + (Name ? " AND Name='" + Name : "") + (CallSign ? "' AND CallSign=" + CallSign : "");
+        var query = "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + (IMO ? " AND IMO=" + IMO: "") + (Name ? " AND Name='" + Name + "'": "") + (CallSign ? "AND CallSign='" + CallSign + "'" : "");
         connection.query(
           query,
           function (error, results, fields) {
@@ -447,37 +444,6 @@ module.exports = class DOA {
           })
         
     })
-  }
-
-  getVessels(tileId, scale, timestamp) { // good chance this gonna be deleted
-    return new Promise((resolve, reject) => {
-      const session = mysqlx.getSession(dbconfigs);
-      // we can query the tileId on map_view
-      session
-        .then((session) => {
-          return session
-            .sql(
-              `
-              SELECT *
-              FROM ais_message, position_report
-              WHERE AISMessage_Id = Id
-              AND Timestamp = ?
-              AND MapView` +
-                scale +
-                `_Id = ?
-              `
-            )
-            .bind(timestamp)
-            .bind(tileId)
-            .execute();
-        })
-        .then((vessels) => {
-          resolve(vessels.fetchAll());
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
   }
 };
 
