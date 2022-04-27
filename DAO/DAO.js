@@ -322,8 +322,8 @@ module.exports = class DOA {
         ...dbconfigs,
         multipleStatements: true
       });
-      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select LongitudeE from map_view where Id=" + tileId + ") "
-      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select ActualLongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select ActualLongitudeE from map_view where Id=" + tileId + ") "
+      + "AND Latitude>(Select ActualLatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select ActualLatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
       
       connection.query(
         query2,
@@ -334,7 +334,7 @@ module.exports = class DOA {
           }else{
             let array = [];
             for (let i = 0; i<results.length; i++){
-              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name})
+              array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG":results[i].CoG})
             }
             resolve(array)
           }
