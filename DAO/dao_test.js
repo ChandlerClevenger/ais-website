@@ -14,9 +14,9 @@
  //example insertion objects:
  let object1 = '{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}'
  let object2 = '{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}'
- let batch1 = [{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}, {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}]
+ let batch1 = '[{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}, {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}]'
  let batch2 = [{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":218768000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.8001,10.146383]},"Status":"Under way sailing","RoT":0,"SoG":2.8,"CoG":151.6,"Heading":169},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":265011000,"MsgType":"static_data","IMO":8616087,"CallSign":"SBEN","Name":"SOFIA","VesselType":"Cargo","Length":72,"Breadth":11,"Draught":3.7,"Destination":"DK VEJ","ETA":"2020-11-18T10:00:00.000Z","A":59,"B":13,"C":6,"D":5},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219012302,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.127,12.309167]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":157,"Heading":193},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":2190045,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.471767,8.423305]},"Status":"Unknown value","SoG":0,"CoG":321.4},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":273418960,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.638938,11.375737]},"Status":"Under way sailing","RoT":0,"SoG":0,"CoG":180.7,"Heading":22}];
- let batch3 = [{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":230006000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.394333,12.6615]},"Status":"Under way using engine","RoT":0,"SoG":18.4,"CoG":189.9,"Heading":191},
+ let batch3 = `[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":230006000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.394333,12.6615]},"Status":"Under way using engine","RoT":0,"SoG":18.4,"CoG":189.9,"Heading":191},
  {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":244234000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.175183,12.458667]},"Status":"Under way using engine","RoT":0,"SoG":11.8,"CoG":316.8,"Heading":313},
  {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":538008427,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.125627,12.496787]},"Status":"Under way using engine","RoT":0,"SoG":11.1,"CoG":130.9,"Heading":130},
  {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":304944000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.208523,9.573637]},"Status":"Under way using engine","RoT":-0.4,"SoG":8.8,"CoG":50,"Heading":50},
@@ -50,89 +50,113 @@
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":219001695,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.473452,8.42579]},"Status":"Engaged in fishing","RoT":0,"SoG":0,"CoG":0,"Heading":241},
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":244850855,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.428852,12.320868]},"Status":"Under way using engine","RoT":0,"SoG":12.2,"CoG":345.4,"Heading":344},
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Base Station","MMSI":2573125,"MsgType":"position_report","Position":{"type":"Point","coordinates":[58.433333,8.766667]},"Status":"Unknown value"},
- {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":218176000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.704625,8.177562]},"Status":"Under way using engine","RoT":0,"SoG":4.6,"CoG":231.6,"Heading":238}];
+ {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":218176000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.704625,8.177562]},"Status":"Under way using engine","RoT":0,"SoG":4.6,"CoG":231.6,"Heading":238}]`
  
+
+ /**
+  * Unit Tests (stubs):
+  * stubs don't implement the whole function (queries)
+*/
+
  async function batchInsertionJSON(){
 	 let messageLength = await db.insertAISMessageBatch(batch1);
 	 assert.equal(messageLength, 2)
+	 console.log("1.	Pass")
  }
  
  async function batchInsertionIncorrectInput(){
 	 let messageLength = await db.insertAISMessageBatch("stringMessage")
 	 assert.equal(messageLength, -1)
+	 console.log("2.	Pass")
  }
  
  async function cleanupStringTimestamp(){
 	 let messageLength = await db.cleanupMessages("2020-11-18T00:00:00.000Z")
 	 assert.equal(messageLength, 1)
+	 console.log("3.	Pass")
  }
  
  async function cleanupIncorrectInput(){
 	 let messageLength = await db.cleanupMessages([1602932938])
 	 assert.equal(messageLength, -1)
+	 console.log("3.	Pass")
  }
  
  async function insertAISMessageJSON(){
-	 let messageType = await db.insertAISMessage(batch1[0])
+	 let messageType = await db.insertAISMessage(object1)
 	 assert.equal(messageType, 1)
+	 console.log("4.	Pass")
  }
  
  async function insertAISMessageIncorrectInput(){
-	 let messageType = await db.insertAISMessage(["{Timestamp: '2020-11-18T00:00:00.000Z'}", "{Timestamp: '2020-11-18T00:00:00.000Z'}"])
+	 let messageType = await db.insertAISMessage("[{Timestamp: '2020-11-18T00:00:00.000Z'}, {Timestamp: '2020-11-18T00:00:00.000Z'}]")
 	 assert.equal(messageType, -1)
+	 console.log("5.	Pass")
  }
  
  async function readMostRecentPositionMMSI(){
 	 let messageType = await db.readMostRecentPosition(2123812)
 	 assert.equal(messageType, 1)
+	 console.log("6.	Pass")
  }
  
  async function readMostRecentPositionIncorrectInput(){
-	 let messageType = await db.readMostRecentPosition({"MMSI": 212394})
+	 let messageType = await db.readMostRecentPosition('212394')
 	 assert.equal(messageType, -1)
+	 console.log("7.	Pass")
+
  }
  
  async function readPermanentVesselDataOneParam(){
 	 let messageLength = await db.readPermanentVesselData(319904000)
 	 assert.equal(messageLength, 1)
+	 console.log("8.	Pass")
  }
  
  async function readPermanentVesselDataTwoParams(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021)
 	 assert.equal(messageLength, 1)
+	 console.log("9.	Pass")
  }
  
  async function readPermanentVesselDataThreeParams(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
 	 assert.equal(messageLength, 1)
+	 console.log("10.	Pass")
  }
  
  async function readPermanentVesselDataAllParams(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
 	 assert.equal(messageLength, 1)
+	 console.log("11.	Pass")
  }
  
  async function readPermanentVesselDataNoParams(){
 	 let messageLength = await db.readPermanentVesselData()
 	 assert.equal(messageLength, -1)
+	 console.log("12.	Pass")
  }
  
  async function readAllPortsMatchingNameOneParam(){
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj")
 	 assert.equal(messageLength, 1)
+	 console.log("13.	Pass")
  }
  
  async function readAllPortsMatchingNameBothParams(){
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj", "Peru")
 	 assert.equal(messageLength, 1)
+	 console.log("14.	Pass")
  }
  
  async function readAllPortsMatchingNameWrongParams(){
 	 let messageLength = await db.readAllPortsMatchingName(1020, "Peru")
 	 assert.equal(messageLength, -1)
+	 console.log("15.	Pass")
  }
  
  function callUnitTests(){
+	 console.log("\nUNIT TESTS: \n")
 	 db.stub = true;
 	 batchInsertionJSON();
 	 batchInsertionIncorrectInput();
@@ -150,19 +174,30 @@
 	 readAllPortsMatchingNameOneParam();
 	 readAllPortsMatchingNameBothParams();
 	 readAllPortsMatchingNameWrongParams();
+	 
  }
- 
+
  async function integrationTest(){
+	 console.log("INTEGRATION TESTS: \n")
+	 parsedBatch3 = JSON.parse(batch3)
 	 db.stub = false
 	 await db.deleteMessages()
-	 const readMostRecentPositionEmpty =  await db.readMostRecentPosition(batch3[0].MMSI) 
+	 const readMostRecentPositionEmpty =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 assert.deepEqual(readMostRecentPositionEmpty, {})
+	 console.log("1.	Pass")
 	 const insertion = await db.insertAISMessageBatch(batch3)
 	 assert.equal(insertion, 35)
-	 const readVesselData = await db.readPermanentVesselData(batch3[0].MMSI, batch3[0].IMO, batch3[0].Name) 
-	 const readMostRecentPosition =  await db.readMostRecentPosition(batch3[0].MMSI) 
+	 console.log("2. 	Pass")
+	 const readVesselData = await db.readPermanentVesselData(parsedBatch3[0].MMSI, parsedBatch3[0].IMO, parsedBatch3[0].Name) 
+	 const readMostRecentPosition =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 assert.equal(readMostRecentPosition.IMO, readVesselData[0].IMO)
+	 console.log("3.	Pass")
+	 
  }
  
- callUnitTests();
- integrationTest();
+ async function main(){
+	await callUnitTests();
+	await integrationTest();
+ }
+ 
+ main()

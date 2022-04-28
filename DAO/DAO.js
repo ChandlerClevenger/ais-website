@@ -24,13 +24,14 @@ module.exports = class DOA {
  */
   insertAISMessageBatch(batch) {
     try {
-      if(typeof batch != 'object'){
-        throw "Wrong Input Type"
-        }
       if (this.stub) {
-        return batch.length;
+        let newBatch = JSON.parse(batch)
+        return newBatch.length;
       }
       else{
+        if (typeof batch == 'string') {
+          batch = JSON.parse(batch)
+        }
         return new Promise((resolve, reject) => {
           let error;
           for(let message of batch) {
@@ -44,7 +45,7 @@ module.exports = class DOA {
         })
       }
     } catch (e){
-      console.log(e.toString())
+      //console.log(e.toString())
 		  return -1
     }
   }
@@ -57,11 +58,8 @@ module.exports = class DOA {
  */
   cleanupMessages(timestamp) {
     try{
-      let now = new Date(timestamp);
-      if(now.toString() === 'Invalid Date'){
-        throw "Invalid Date"
-      }
       if (this.stub) {
+        convertTimestamp(timestamp)
         return 1;
       }
       return new Promise((resolve, reject) => {
@@ -97,7 +95,7 @@ module.exports = class DOA {
         return -1
       })
     }catch (e){
-      console.log(e.toString())
+      //console.log(e.toString())
       return -1
     }
   }
@@ -110,13 +108,14 @@ module.exports = class DOA {
  */
   insertAISMessage(message) {
     try{
-      if(message.constructor != Object){
-        throw "Wrong Input Type"
-      }
       if (this.stub) {
+        JSON.parse(message)
         return 1;
       }
       return new Promise((resolve, reject) => {
+        if (typeof message == 'string') {
+          message = JSON.parse(message)
+        }
         let connection = mysql.createConnection(dbconfigs);
         if (message.MsgType == "position_report") {
           let position = message.Position;
@@ -200,7 +199,7 @@ module.exports = class DOA {
       })
     }
     catch (e){
-      console.log(e.toString())
+      //console.log(e.toString())
       return -1
     }
   }
@@ -236,8 +235,8 @@ module.exports = class DOA {
       })
     }
     catch (e) {
-      console.log(e.toString())
-       return -1
+      //console.log(e.toString())
+      return -1
     }
   }
 
@@ -249,10 +248,10 @@ module.exports = class DOA {
  */
   readMostRecentPosition(MMSI) { 
     try{
-      if(typeof MMSI != 'number'){
-        throw "Wrong Input Type"
-      }
       if (this.stub) {
+        if(typeof MMSI != 'number'){
+          return -1
+        }
         return 1;
       }
       else {
@@ -295,10 +294,10 @@ module.exports = class DOA {
 
   readPermanentVesselData(MMSI, IMO, Name, CallSign) {
     try{
-      if(typeof MMSI != 'number'){
-        throw "Wrong Input Type"
-      }
       if (this.stub) {
+        if(typeof MMSI != 'number'){
+          return -1
+        }
         return 1
       }
       return new Promise((resolve, reject) => {
@@ -377,7 +376,7 @@ module.exports = class DOA {
   readAllPortsMatchingName(Name, Country){
     try{
       if(typeof Name != 'string'){
-        throw "Wrong Input Type"
+        return -1
       }
       if (this.stub) {
         return 1;
@@ -478,7 +477,7 @@ module.exports = class DOA {
   }
 
     /**
- * Deletes all AIS messages from the database 
+ * Function solely used for testing. Purpose: Deletes all AIS messages from the database at the start of the integration testing.
  * @function readMostRecentPosition
  * @returns {integer} deletionAmount - Number of rows affected
  */
