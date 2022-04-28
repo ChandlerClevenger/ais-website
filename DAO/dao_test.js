@@ -53,135 +53,179 @@
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":218176000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.704625,8.177562]},"Status":"Under way using engine","RoT":0,"SoG":4.6,"CoG":231.6,"Heading":238}]`
  
 
- /**
-  * Unit Tests (stubs):
-  * stubs don't implement the whole function (queries)
-*/
+  // Unit Tests (stubs):
+  // stubs don't implement the whole function (queries)
 
- async function batchInsertionJSON(){
+/**
+ * Unit test that tests whether the insertAISMessageBatch function can be called on the interface with the correct parameters without a connection to the database.
+ */
+ async function batchInsertionUnitTest(){
 	 let messageLength = await db.insertAISMessageBatch(batch1);
 	 assert.equal(messageLength, 2)
 	 console.log("1.	Pass")
  }
- 
- async function batchInsertionIncorrectInput(){
+ /**
+ * Unit test that tests whether the insertAISMessageBatch function fails nicely with incorrect input.
+ */
+ async function batchInsertionIncorrectInputUnitTest(){
 	 let messageLength = await db.insertAISMessageBatch("stringMessage")
 	 assert.equal(messageLength, -1)
 	 console.log("2.	Pass")
  }
- 
- async function cleanupStringTimestamp(){
+ /**
+ * Unit test that tests whether the cleanupMessages function can be called on the interface with the correct parameters without a connection to the database.
+ */
+ async function cleanupStringUnitTest(){
 	 let messageLength = await db.cleanupMessages("2020-11-18T00:00:00.000Z")
 	 assert.equal(messageLength, 1)
 	 console.log("3.	Pass")
  }
- 
- async function cleanupIncorrectInput(){
+/**
+ * Unit test that tests whether the cleanupMessages function fails nicely with incorrect input.
+ */
+ async function cleanupIncorrectInputUnitTest(){
 	 let messageLength = await db.cleanupMessages([1602932938])
 	 assert.equal(messageLength, -1)
 	 console.log("3.	Pass")
  }
- 
- async function insertAISMessageJSON(){
+ /**
+ * Unit test that tests whether the insertAISMessage function can be called on the interface with the correct parameters without a connection to the database.
+ */
+ async function insertAISMessageUnitTest(){
 	 let messageType = await db.insertAISMessage(object1)
 	 assert.equal(messageType, 1)
 	 console.log("4.	Pass")
  }
- 
- async function insertAISMessageIncorrectInput(){
+ /**
+ * Unit test that tests whether the insertAISMessage function fails nicely with incorrect input.
+ */
+ async function insertAISMessageIncorrectInputUnitTest(){
 	 let messageType = await db.insertAISMessage("[{Timestamp: '2020-11-18T00:00:00.000Z'}, {Timestamp: '2020-11-18T00:00:00.000Z'}]")
 	 assert.equal(messageType, -1)
 	 console.log("5.	Pass")
  }
- 
- async function readMostRecentPositionMMSI(){
+ /**
+ * Unit test that tests whether the readMostRecentPosition function can be called on the interface with the correct parameters without a connection to the database.
+ */
+ async function readMostRecentPositionUnitTest(){
 	 let messageType = await db.readMostRecentPosition(2123812)
 	 assert.equal(messageType, 1)
 	 console.log("6.	Pass")
  }
- 
- async function readMostRecentPositionIncorrectInput(){
+ /**
+ * Unit test that tests whether the readMostRecentPosition function fails nicely with incorrect input.
+ */
+ async function readMostRecentPositionIncorrectInputUnitTest(){
 	 let messageType = await db.readMostRecentPosition('212394')
 	 assert.equal(messageType, -1)
 	 console.log("7.	Pass")
 
  }
- 
- async function readPermanentVesselDataOneParam(){
+ /**
+ * Unit test that tests whether the readPermanentVesselData function can be called on the interface with the correct parameter (MMSI) without a connection to the database.
+ */
+ async function readPermanentVesselDataOneParamUnitTest(){
 	 let messageLength = await db.readPermanentVesselData(319904000)
 	 assert.equal(messageLength, 1)
 	 console.log("8.	Pass")
  }
- 
- async function readPermanentVesselDataTwoParams(){
+ /**
+ * Unit test that tests whether the readPermanentVesselData function can be called on the interface with the correct parameters (MMSI, IMO) without a connection to the database.
+ */
+ async function readPermanentVesselDataTwoParamsUnitTest(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021)
 	 assert.equal(messageLength, 1)
 	 console.log("9.	Pass")
  }
- 
- async function readPermanentVesselDataThreeParams(){
+ /**
+ * Unit test that tests whether the readPermanentVesselData function can be called on the interface with the correct parameters (MMSI, IMO, Name) without a connection to the database.
+ */
+ async function readPermanentVesselDataThreeParamsUnitTest(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
 	 assert.equal(messageLength, 1)
 	 console.log("10.	Pass")
  }
- 
- async function readPermanentVesselDataAllParams(){
+ /**
+ * Unit test that tests whether the readPermanentVesselData function can be called on the interface with the correct parameters (MMSI, IMO, Name, CallSign) without a connection to the database.
+ */
+ async function readPermanentVesselDataAllParamsUnitTest(){
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
 	 assert.equal(messageLength, 1)
 	 console.log("11.	Pass")
  }
- 
- async function readPermanentVesselDataNoParams(){
+ /**
+ * Unit test that tests whether the readPermanentVesselData function fails nicely with incorrect input.
+ */
+ async function readPermanentVesselDataNoParamsUnitTest(){
 	 let messageLength = await db.readPermanentVesselData()
 	 assert.equal(messageLength, -1)
 	 console.log("12.	Pass")
  }
- 
- async function readAllPortsMatchingNameOneParam(){
+ /**
+ * Unit test that tests whether the readAllPortsMatchingName function can be called on the interface with the correct parameter (Name) without a connection to the database.
+ */
+ async function readAllPortsMatchingNameOneParamUnitTest(){
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj")
 	 assert.equal(messageLength, 1)
 	 console.log("13.	Pass")
  }
- 
- async function readAllPortsMatchingNameBothParams(){
+ /**
+ * Unit test that tests whether the readAllPortsMatchingName function can be called on the interface with the correct parameters (Name, Country) without a connection to the database.
+ */
+ async function readAllPortsMatchingNameBothParamsUnitTest(){
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj", "Peru")
 	 assert.equal(messageLength, 1)
 	 console.log("14.	Pass")
  }
- 
- async function readAllPortsMatchingNameWrongParams(){
+ /**
+ * Unit test that tests whether the readAllPortsMatchingName function fails nicely with incorrect input.
+ */
+ async function readAllPortsMatchingNameWrongParamsUnitTest(){
 	 let messageLength = await db.readAllPortsMatchingName(1020, "Peru")
 	 assert.equal(messageLength, -1)
 	 console.log("15.	Pass")
  }
  
- function callUnitTests(){
+ /**
+ * Function that contains and calls all of the unit tests.
+ * @function unitTests
+ */
+ 	async function unitTests(){
 	 console.log("\nUNIT TESTS: \n")
 	 db.stub = true;
-	 batchInsertionJSON();
-	 batchInsertionIncorrectInput();
-	 cleanupStringTimestamp();
-	 cleanupIncorrectInput();
-	 insertAISMessageJSON();
-	 insertAISMessageIncorrectInput();
-	 readMostRecentPositionMMSI();
-	 readMostRecentPositionIncorrectInput();
-	 readPermanentVesselDataOneParam();
-	 readPermanentVesselDataTwoParams();
-	 readPermanentVesselDataThreeParams();
-	 readPermanentVesselDataAllParams();
-	 readPermanentVesselDataNoParams();
-	 readAllPortsMatchingNameOneParam();
-	 readAllPortsMatchingNameBothParams();
-	 readAllPortsMatchingNameWrongParams();
+	 batchInsertionUnitTest();
+	 batchInsertionIncorrectInputUnitTest();
+	 cleanupStringUnitTest();
+	 cleanupIncorrectInputUnitTest();
+	 insertAISMessageUnitTest();
+	 insertAISMessageIncorrectInputUnitTest();
+	 readMostRecentPositionUnitTest();
+	 readMostRecentPositionIncorrectInputUnitTest();
+	 readPermanentVesselDataOneParamUnitTest();
+	 readPermanentVesselDataTwoParamsUnitTest();
+	 readPermanentVesselDataThreeParamsUnitTest();
+	 readPermanentVesselDataAllParamsUnitTest();
+	 readPermanentVesselDataNoParamsUnitTest();
+	 readAllPortsMatchingNameOneParamUnitTest();
+	 readAllPortsMatchingNameBothParamsUnitTest();
+	 readAllPortsMatchingNameWrongParamsUnitTest();
 	 
  }
 
- async function integrationTest(){
-	 console.log("INTEGRATION TESTS: \n")
+
+  // Integration Tests :
+  // Tests that actually implement and run queries on the database through a connection.
+
+
+
+  /**
+ * Function that contains all of the integration tests.
+ * @function integrationTests
+ */
+ async function integrationTests(){
+	 console.log("\nINTEGRATION TESTS: \n")
 	 parsedBatch3 = JSON.parse(batch3)
 	 db.stub = false
-	 await db.deleteMessages()
 	 const readMostRecentPositionEmpty =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 assert.deepEqual(readMostRecentPositionEmpty, {})
 	 console.log("1.	Pass")
@@ -195,9 +239,19 @@
 	 
  }
  
- async function main(){
-	await callUnitTests();
-	await integrationTest();
+/**
+ * Function that is called to clear the dynamic database tables and calls the unit and integration testing functions.
+ * @function mainTest
+ */
+
+ async function mainTest(){
+	console.log("\nMilestone 4.\nOption C.\nDAO Testing File")
+	console.log("-------------------------------------------------")
+	console.log("\nClearing the Dynamic Position Report and Static Data Tables from the Database...")
+	console.log("-------------------------------------------------")
+	await db.deleteMessages()
+	await unitTests();
+	await integrationTests();
  }
  
- main()
+ mainTest()
