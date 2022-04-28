@@ -52,20 +52,6 @@
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Base Station","MMSI":2573125,"MsgType":"position_report","Position":{"type":"Point","coordinates":[58.433333,8.766667]},"Status":"Unknown value"},
  {"Timestamp":"2020-11-18T00:00:01.000Z","Class":"Class A","MMSI":218176000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.704625,8.177562]},"Status":"Under way using engine","RoT":0,"SoG":4.6,"CoG":231.6,"Heading":238}];
  
- /*describe('TMB_DAO',	function(){
-	 describe('insert_message_batch_interface( batch )', function() {
-		 it('is defined and accepts a JSON parsable string as an input', function() {
- 
-			 let inserted_count =  dao.insertAISMessageBatch( array );
-			 assert.equal( inserted_count, 2)
-		 })
-	 })
- });
- 
- */
- //Unit Tests (stubs):
- //stubs don't implement the whole function (queries)
- 
  async function batchInsertionJSON(){
 	 let messageLength = await db.insertAISMessageBatch(batch1);
 	 assert.equal(messageLength, 2)
@@ -77,73 +63,73 @@
  }
  
  async function cleanupStringTimestamp(){
-	 let messageType = await db.cleanupMessages("2020-11-18T00:00:00.000Z")
-	 assert.equal(messageType, "string")
+	 let messageLength = await db.cleanupMessages("2020-11-18T00:00:00.000Z")
+	 assert.equal(messageLength, 1)
  }
  
  async function cleanupIncorrectInput(){
-	 let messageType = await db.cleanupMessages(1602932938)
-	 assert.notEqual(messageType, "string")
+	 let messageLength = await db.cleanupMessages([1602932938])
+	 assert.equal(messageLength, -1)
  }
  
  async function insertAISMessageJSON(){
 	 let messageType = await db.insertAISMessage(batch1[0])
-	 assert.equal(messageType, Object)
+	 assert.equal(messageType, 1)
  }
  
  async function insertAISMessageIncorrectInput(){
 	 let messageType = await db.insertAISMessage(["{Timestamp: '2020-11-18T00:00:00.000Z'}", "{Timestamp: '2020-11-18T00:00:00.000Z'}"])
-	 assert.notEqual(messageType, Object)
+	 assert.equal(messageType, -1)
  }
  
  async function readMostRecentPositionMMSI(){
 	 let messageType = await db.readMostRecentPosition(2123812)
-	 assert.equal(messageType, "number")
+	 assert.equal(messageType, 1)
  }
  
  async function readMostRecentPositionIncorrectInput(){
 	 let messageType = await db.readMostRecentPosition({"MMSI": 212394})
-	 assert.notEqual(messageType, "number")
+	 assert.equal(messageType, -1)
  }
  
  async function readPermanentVesselDataOneParam(){
-	 let messageTypes = await db.readPermanentVesselData(319904000)
-	 assert.deepEqual(messageTypes, ["number", 'undefined', 'undefined', 'undefined'])
+	 let messageLength = await db.readPermanentVesselData(319904000)
+	 assert.equal(messageLength, 1)
  }
  
  async function readPermanentVesselDataTwoParams(){
-	 let messageTypes = await db.readPermanentVesselData(319904000,1000021)
-	 assert.deepEqual(messageTypes, ["number", "number", 'undefined', 'undefined'])
+	 let messageLength = await db.readPermanentVesselData(319904000,1000021)
+	 assert.equal(messageLength, 1)
  }
  
  async function readPermanentVesselDataThreeParams(){
-	 let messageTypes = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
-	 assert.deepEqual(messageTypes, ["number", "number", "string", 'undefined'])
+	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
+	 assert.equal(messageLength, 1)
  }
  
  async function readPermanentVesselDataAllParams(){
-	 let messageTypes = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
-	 assert.deepEqual(messageTypes, ["number", "number", "string", "string"])
+	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
+	 assert.equal(messageLength, 1)
  }
  
  async function readPermanentVesselDataNoParams(){
-	 let messageTypes = await db.readPermanentVesselData()
-	 assert.deepEqual(messageTypes, ['undefined', 'undefined', 'undefined', 'undefined'])
+	 let messageLength = await db.readPermanentVesselData()
+	 assert.equal(messageLength, -1)
  }
  
  async function readAllPortsMatchingNameOneParam(){
-	 let messageTypes = await db.readAllPortsMatchingName("Montkaj")
-	 assert.deepEqual(messageTypes, ["string", 'undefined'])
+	 let messageLength = await db.readAllPortsMatchingName("Montkaj")
+	 assert.equal(messageLength, 1)
  }
  
  async function readAllPortsMatchingNameBothParams(){
-	 let messageTypes = await db.readAllPortsMatchingName("Montkaj", "Peru")
-	 assert.deepEqual(messageTypes, ["string", "string"])
+	 let messageLength = await db.readAllPortsMatchingName("Montkaj", "Peru")
+	 assert.equal(messageLength, 1)
  }
  
  async function readAllPortsMatchingNameWrongParams(){
-	 let messageTypes = await db.readAllPortsMatchingName("Montkaj", "Peru")
-	 assert.notDeepEqual(messageTypes, ["number", "number"])
+	 let messageLength = await db.readAllPortsMatchingName(1020, "Peru")
+	 assert.equal(messageLength, -1)
  }
  
  function callUnitTests(){
@@ -167,99 +153,16 @@
  }
  
  async function integrationTest(){
-	 db.stub = false;
-	 
-	 const readMostRecentPositionNull =  await db.readPermanentVesselData(batch3[0].MMSI) 
-	 console.log(readMostRecentPositionNull)
+	 db.stub = false
+	 await db.deleteMessages()
+	 const readMostRecentPositionEmpty =  await db.readMostRecentPosition(batch3[0].MMSI) 
+	 assert.deepEqual(readMostRecentPositionEmpty, {})
 	 const insertion = await db.insertAISMessageBatch(batch3)
 	 assert.equal(insertion, 35)
-	 const readMostRecentPosition =  await db.readPermanentVesselData(batch3[0].MMSI) 
-	 assert.equal(insertion.IMO, batch3[0].IMO)
 	 const readVesselData = await db.readPermanentVesselData(batch3[0].MMSI, batch3[0].IMO, batch3[0].Name) 
-	 assert.equal(insertion.Flag, batch3[0].Flag)
-	 const cleanup = await db.cleanupMessages(batch3[0].Timestamp)
-	 //const readPorts = await db.readAllPortsMatchingName()
-	 //console.log(readPorts);
+	 const readMostRecentPosition =  await db.readMostRecentPosition(batch3[0].MMSI) 
+	 assert.equal(readMostRecentPosition.IMO, readVesselData[0].IMO)
  }
  
  callUnitTests();
  integrationTest();
- 
- //readPermanentInfoTwoParameters()
- //readAllMostRecentPositions()
- //readPortsMatchingNameWithNameAndCountry()
- //readMostRecentPosition()
- //readPermanentInfoOneParameter()
- //readLastFivePositions()
- //insertSmallAISBatch(batch1).then(readPermanentInfoOneParameter(319904000))
- 
- // readPermanentInfoTwoParameters(319904000,1000021) 
- // readPermanentInfoThreeParameters(319904000,1000021,"Montkaj") 
- // readPermanentInfoAllParameters(319904000,1000021,"Montkaj", undefined) 
- 
- 
- 
- 
- 
- 
- async function insertSmallAISBatch(batch) {
-	 let insertionAmount = await db.insertAISMessageBatch(batch);
-	 assert.equal(insertionAmount, 2)
- }
- async function insertMediumAISBatch(batch) {
-	 let insertionAmount = await db.insertAISMessageBatch(batch);
-	 assert.equal(insertionAmount, 5)
- }
- async function insertLargeAISBatch(batch){
-	 let insertionAmount = await db.insertAISMessageBatch(batch);
-	 assert.equal(insertionAmount, 35)
- }
- async function insertOneStaticData(message) {
-	 let successfulInsert = await db.insertAISMessage(message);
-	 assert.equal(successfulInsert, 1)
- }
- async function insertOnePositionReport(message){
-	 let successfulInsert = await db.insertAISMessage(message);
-	 assert.equal(successfulInsert, 1)
- }
- async function deleteOldMessages(){
-	 let successfulDeletetion = await db.deleteOldMessages(mmsi)
-	 assert.equal(successfulDeletetion,) //integer tbd)
- }
- async function readAllMostRecentPositions(){
-	 let successfulRead = await db.readMostRecentPositionAllShips()
-	 //console.log(successfulRead)
-	 //assert.deepEqual(,[])
- }
- async function readMostRecentPosition() {
-	 let successfulRead = await db.readMostRecentPosition(246430000);
-	 console.log(successfulRead)
-	 //assert.deepEqual(successfulRead, {"MMSI":246430000,"lat":57.147058,"long":8.319127,"IMO":9248564})
- }
- async function readPermanentInfoOneParameter(mmsi) {
-	 let successfulRead = await db.readPermanentVesselData(mmsi)
-	 console.log(successfulRead)
- }
- async function readPermanentInfoTwoParameters(mmsi, imo) {
-	 let successfulRead = await db.readPermanentVesselData(mmsi,imo)
-	 console.log(successfulRead)
- }
- async function readPermanentInfoThreeParameters(mmsi,imo,name) {
-	 let successfulRead = await db.readPermanentVesselData(mmsi, imo, name)
-	 console.log(successfulRead)
- }
- async function readPermanentInfoAllParameters(mmsi,imo,name,callsign) {
-	 let successfulRead = await db.readPermanentVesselData(mmsi, imo, name, callsign)
- }
- async function readMostRecentPosition(mmsi) {
-	 let successfulRead = await db.readMostRecentPosition(mmsi)
-	 console.log(successfulRead)
- }
- async function readPortsMatchingNameWithOnlyName() {
-	 let successfulRead = await db.readAllPortsMatchingName('Nyborg');
-	 assert.deepEqual(successfulRead, [{"Id":381, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.298889, "Longitude":10.810833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312},{"Id":4970, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.306944, "Longitude":10.790833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312}])
- }
- async function readPortsMatchingNameWithNameAndCountry() {
-	 let successfulRead = await db.readAllPortsMatchingName('Nyborg','Denmark');
-	 assert.deepEqual(successfulRead, [{"Id":381, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.298889, "Longitude":10.810833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312},{"Id":4970, "Name":'Nyborg', "Country":'Denmark', "Latitude":55.306944, "Longitude":10.790833,"MapView1_Id":1,"MapView2_Id":5331,"MapView3_Id":53312}])
- }

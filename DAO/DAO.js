@@ -24,13 +24,11 @@ module.exports = class DOA {
  */
   insertAISMessageBatch(batch) {
     try {
+      if(typeof batch != 'object'){
+        throw "Wrong Input Type"
+        }
       if (this.stub) {
-        if(typeof batch == 'object'){
-          return batch.length;
-        }
-        else{
-          return -1
-        }
+        return batch.length;
       }
       else{
         return new Promise((resolve, reject) => {
@@ -40,10 +38,13 @@ module.exports = class DOA {
           }
           if (error) reject(error);
           resolve(batch.length);
+        }).catch((e) => {
+          console.log(e.toString())
+          return -1
         })
       }
     } catch (e){
-      console.log("Error:" + e)
+      console.log(e.toString())
 		  return -1
     }
   }
@@ -56,16 +57,18 @@ module.exports = class DOA {
  */
   cleanupMessages(timestamp) {
     try{
+      let now = new Date(timestamp);
+      if(now.toString() === 'Invalid Date'){
+        throw "Invalid Date"
+      }
       if (this.stub) {
-        return typeof timestamp;
+        return 1;
       }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection({
           ...dbconfigs,
           multipleStatements: true
         });
-      
-        let now = new Date(timestamp);
         connection.query(
           `
           DELETE FROM d_position_report 
@@ -89,9 +92,12 @@ module.exports = class DOA {
             resolve(totalRowsAffected);
             connection.destroy();
           })
+      }).catch((e) => {
+        console.log(e.toString())
+        return -1
       })
     }catch (e){
-      console.log("Error:" + e)
+      console.log(e.toString())
       return -1
     }
   }
@@ -104,8 +110,11 @@ module.exports = class DOA {
  */
   insertAISMessage(message) {
     try{
+      if(message.constructor != Object){
+        throw "Wrong Input Type"
+      }
       if (this.stub) {
-        return message.constructor;
+        return 1;
       }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection(dbconfigs);
@@ -185,10 +194,13 @@ module.exports = class DOA {
         else {
           resolve(0)
         }
+      }).catch((e) => {
+        console.log(e.toString())
+        return -1
       })
     }
     catch (e){
-      console.log("Error:" + e)
+      console.log(e.toString())
       return -1
     }
   }
@@ -218,10 +230,13 @@ module.exports = class DOA {
             }
             connection.destroy();
           })
-      });
+      }).catch((e) => {
+        console.log(e.toString())
+        return -1
+      })
     }
     catch (e) {
-      console.log("Error:" + e)
+      console.log(e.toString())
        return -1
     }
   }
@@ -234,8 +249,11 @@ module.exports = class DOA {
  */
   readMostRecentPosition(MMSI) { 
     try{
+      if(typeof MMSI != 'number'){
+        throw "Wrong Input Type"
+      }
       if (this.stub) {
-        return typeof MMSI;
+        return 1;
       }
       else {
         return new Promise((resolve, reject) => {
@@ -248,18 +266,19 @@ module.exports = class DOA {
                 console.log("ERROR READING POSITION")
                 reject(error);
               }else{
-              
-                let result = {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO}
-                //resolve(JSON.stringify(result));
+                let result = results[0] ? {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO} : {}
                 resolve(result)
               }
               connection.destroy();
             })
-        });
+        }).catch((e) => {
+          console.log(e.toString())
+          return -1
+        })
       }
     }
     catch (e){
-      console.log("Error:" + e)
+      console.log(e.toString())
       return -1
     }
   }
@@ -276,8 +295,11 @@ module.exports = class DOA {
 
   readPermanentVesselData(MMSI, IMO, Name, CallSign) {
     try{
+      if(typeof MMSI != 'number'){
+        throw "Wrong Input Type"
+      }
       if (this.stub) {
-        return [typeof MMSI, typeof IMO, typeof Name, typeof CallSign];
+        return 1
       }
       return new Promise((resolve, reject) => {
         let connection = mysql.createConnection(dbconfigs);
@@ -298,10 +320,13 @@ module.exports = class DOA {
             connection.destroy();
           }
         )
-      });
+      }).catch((e) => {
+        console.log( e)
+        return -1
+      })
     }
     catch(e){
-      console.log("Error:" + e)
+      console.log(e.toString())
       return -1
     }
   }
@@ -326,7 +351,7 @@ module.exports = class DOA {
         query2,
         function(error, results, fields) {
           if (error) {
-            console.log("ERROR INSERTING POSITION REPORT")
+            console.log("ERROR READING RECENT POSITIONS IN TILE")
             reject(error);
           }else{
             let array = [];
@@ -351,8 +376,11 @@ module.exports = class DOA {
 
   readAllPortsMatchingName(Name, Country){
     try{
+      if(typeof Name != 'string'){
+        throw "Wrong Input Type"
+      }
       if (this.stub) {
-        return [typeof Name, typeof Country];
+        return 1;
       }
       else{
         return new Promise((resolve, reject) => {
@@ -362,7 +390,7 @@ module.exports = class DOA {
             query1,
             function (error, results, fields) {
               if (error) {
-                console.log("ERROR INSERTING POSITION REPORT")
+                console.log("ERROR READING PORTS MATCHING NAME/COUNTRY")
                 reject(error);
               } else {
                 let array = [];
@@ -373,11 +401,14 @@ module.exports = class DOA {
               }
               connection.destroy();
             })
+        }).catch((e) => {
+          console.log(e.toString())
+          return -1
         })
       }
     }
     catch(e){
-      console.log("Error:" + e)
+      console.log(e.toString())
       return -1
     }
   }
@@ -415,7 +446,7 @@ module.exports = class DOA {
                   query2,
                   function (error, results, fields) {
                     if (error) {
-                      console.log("ERROR INSERTING POSITION REPORT")
+                      console.log("ERROR READING SHIPS IN SCALE 3 TILE")
                       reject(error);
                     } else {
                       let array = [];
@@ -443,6 +474,36 @@ module.exports = class DOA {
             connection.destroy();
           })
         
+    })
+  }
+
+    /**
+ * Deletes all AIS messages from the database 
+ * @function readMostRecentPosition
+ * @returns {integer} deletionAmount - Number of rows affected
+ */
+  deleteMessages() {
+    return new Promise((resolve, reject) => {
+      let connection = mysql.createConnection({...dbconfigs,  multipleStatements: true});
+      var query = "DELETE FROM d_position_report; DELETE FROM d_static_data;"
+      connection.query(
+        query,
+        function (error, results) {
+          if (error) {
+            console.log("ERROR DELETING ENTRIES FROM AIS MESSAGES")
+            reject(error);
+          } else {
+            let totalRowsAffected = 0;
+            for (let res of results) {
+              totalRowsAffected += res.affectedRows;
+            }
+            resolve(totalRowsAffected);
+          }
+          connection.destroy();
+        })
+    }).catch((e) => {
+      console.log(e.toString())
+      return -1
     })
   }
 };
