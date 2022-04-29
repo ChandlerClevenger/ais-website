@@ -7,12 +7,19 @@
 
  let mysql = require("mysql");
  const config = require("../config.js");
- let dbconfigs = {
+ const dbconfigs = {
    host: config.db.host,
    user: config.db.user,
    password: config.db.password,
    database: config.db.schema
  };
+
+ const pool = mysql.createPool({
+  connectionLimit: 5,
+  multipleStatements: true,
+  ...dbconfigs
+ });
+
  module.exports = class DOA {
    stub = false;
  
@@ -63,12 +70,8 @@
          return 1;
        }
        return new Promise((resolve, reject) => {
-         let connection = mysql.createConnection({
-           ...dbconfigs,
-           multipleStatements: true
-         });
          let now = new Date(timestamp);
-         connection.query(
+         pool.query(
            `
            DELETE FROM d_position_report 
            WHERE Timestamp NOT BETWEEN ? AND ?;
@@ -89,7 +92,6 @@
                totalRowsAffected += res.affectedRows;
              }
              resolve(totalRowsAffected);
-             connection.destroy();
            })
        }).catch((e) => {
          console.log(e.toString())
@@ -117,10 +119,9 @@
          if (typeof message == 'string') {
            message = JSON.parse(message)
          }
-         let connection = mysql.createConnection(dbconfigs);
          if (message.MsgType == "position_report") {
            let position = message.Position;
-           connection.query(
+           pool.query(
              `
              INSERT INTO d_position_report
              SET ?
@@ -151,10 +152,9 @@
                    resolve(0)
                  }
                }
-               connection.destroy();
              })
          } else if (message.MsgType == "static_data") {
-           connection.query(
+          pool.query(
              `
              INSERT INTO d_static_data
              SET ?
@@ -188,7 +188,6 @@
                    resolve (0)
                  }
                }
-               connection.destroy();
              })
          }
          else {
@@ -216,9 +215,8 @@
          return 1
        }
        return new Promise((resolve, reject) => {
-         let connection = mysql.createConnection(dbconfigs);
          var query = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI)"
-         connection.query(
+         pool.query(
            query,
            function (error, results, fields) {
              if (error) {
@@ -231,7 +229,6 @@
                }
                resolve(array);
              }
-             connection.destroy();
            })
        }).catch((e) => {
          console.log(e.toString())
@@ -260,9 +257,8 @@
        }
        else {
          return new Promise((resolve, reject) => {
-           let connection = mysql.createConnection(dbconfigs);
            var query = "Select VESSEL.MMSI,Latitude,Longitude,IMO,Name FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND VESSEL.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
-           connection.query(
+           pool.query(
              query,
              function (error, results, fields) {
                if (error) {
@@ -272,7 +268,6 @@
                  let result = results[0] ? {"MMSI": MMSI, "lat": results[0].Latitude, "long": results[0].Longitude, "IMO": results[0].IMO} : {}
                  resolve(result)
                }
-               connection.destroy();
              })
          }).catch((e) => {
            console.log(e.toString())
@@ -305,9 +300,8 @@
          return 1
        }
        return new Promise((resolve, reject) => {
-         let connection = mysql.createConnection(dbconfigs);
          var query = "SELECT * FROM VESSEL WHERE MMSI=" + MMSI + (IMO ? " AND IMO=" + IMO: "") + (Name ? " AND Name='" + Name + "'": "") + (CallSign ? "AND CallSign='" + CallSign + "'" : "");
-         connection.query(
+         pool.query(
            query,
            function (error, results, fields) {
              if (error) {
@@ -320,7 +314,6 @@
                }
                resolve(array);
              }
-             connection.destroy();
            }
          )
        }).catch((e) => {
@@ -350,15 +343,10 @@
        }
        else{
          return new Promise((resolve, reject) => {
-           //let connection = mysql.createConnection(dbconfigs);
-           let connection = mysql.createConnection({
-             ...dbconfigs,
-             multipleStatements: true
-           });
            let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select ActualLongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select ActualLongitudeE from map_view where Id=" + tileId + ") "
            + "AND Latitude>(Select ActualLatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select ActualLatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
            
-           connection.query(
+           pool.query(
              query2,
              function(error, results, fields) {
                if (error) {
@@ -370,14 +358,12 @@
                    array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG":results[i].CoG})
                  }
                  resolve(array)
-                 console.log(array)
                  //resolve(results)
                }
-               connection.destroy();
              }
            )
          }).catch((e) => {
-           console.log( e)
+           console.log(e)
            return -1
          })
        }
@@ -405,9 +391,8 @@
        }
        else{
          return new Promise((resolve, reject) => {
-           let connection = mysql.createConnection(dbconfigs);
-           let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + connection.escape(Name) + (Country ? " AND Country=" + connection.escape(Country) : "")
-           connection.query(
+           let query1= "SELECT Id, Name, Country, Latitude, Longitude, MapView1_Id, MapView2_Id, MapView3_Id FROM PORT where Name=" + pool.escape(Name) + (Country ? " AND Country=" + pool.escape(Country) : "")
+           pool.query(
              query1,
              function (error, results, fields) {
                if (error) {
@@ -420,7 +405,6 @@
                  }
                  resolve(array);
                }
-               connection.destroy();
              })
          }).catch((e) => {
            console.log(e.toString())
@@ -450,11 +434,9 @@
          let countryChar = country.charAt(0)
          return 1
        }else{
-         return new Promise((resolve, reject) => {
-           let connection = mysql.createConnection(dbconfigs);
-           
+         return new Promise((resolve, reject) => {           
              let query1= "SELECT * FROM aistestdata.port where Name='" + portName + "' AND Country='" + country + "'";
-             connection.query(
+             pool.query(
                query1,
                function (error, results, fields) {
                  if (error) {
@@ -465,11 +447,10 @@
                    
                    if (portCount == 1) {
                      
-                     let connection2 = mysql.createConnection(dbconfigs);
                      let tileId = results[0].MapView3_Id
                      let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude<(Select LongitudeE from map_view where Id=" + tileId + ") "
                      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
-                     connection2.query(
+                     pool.query(
                        query2,
                        function (error, results, fields) {
                          if (error) {
@@ -482,7 +463,6 @@
                            }
                            resolve(array)
                          }
-                         connection2.destroy();
                        }
                      )
                    }
@@ -496,9 +476,7 @@
                      resolve(array);
                    }
                    //console.log(results.length)
-                   
                  }
-                 connection.destroy();
                })
          })
        }
@@ -515,9 +493,8 @@
   */
    deleteMessages() {
      return new Promise((resolve, reject) => {
-       let connection = mysql.createConnection({...dbconfigs,  multipleStatements: true});
        var query = "DELETE FROM d_position_report; DELETE FROM d_static_data;"
-       connection.query(
+       pool.query(
          query,
          function (error, results) {
            if (error) {
@@ -530,7 +507,6 @@
              }
              resolve(totalRowsAffected);
            }
-           connection.destroy();
          })
      }).catch((e) => {
        console.log(e.toString())
