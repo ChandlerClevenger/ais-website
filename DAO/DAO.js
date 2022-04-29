@@ -212,9 +212,9 @@
   */
    readMostRecentPositionAllShips() {
      try{
-       //if (this.stub){
-         
-       //}
+       if (this.stub){
+         return 1
+       }
        return new Promise((resolve, reject) => {
          let connection = mysql.createConnection(dbconfigs);
          var query = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO,Name,CoG FROM VESSEL, d_position_report WHERE VESSEL.MMSI=d_position_report.MMSI AND (Timestamp, Vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI)"
