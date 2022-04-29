@@ -67,6 +67,7 @@ module.exports = class DOA {
           ...dbconfigs,
           multipleStatements: true
         });
+        let now = new Date(timestamp);
         connection.query(
           `
           DELETE FROM d_position_report 
