@@ -367,8 +367,7 @@
 		console.log(e)
 	 }
 
-	 //const type = await db.readRecentPositionsInTile(1)
-	 //assert.equal(type, 1)
+	
 
 	 const insertion = await db.insertAISMessageBatch(batch3)
 	 try{
@@ -379,17 +378,77 @@
 		console.log(e)
 	 }
 
+	 //console.log(type.length)
+
+	 const portRead1 = await db.readAllPortsMatchingName("Nyborg", "Denmark")
+	 try{
+		assert.equal(portRead1.length, 2)
+		console.log("3. 	Pass")
+	 }catch(e){
+		console.log("3. 	Fail\n")
+		console.log(e)
+	 }
+	 const portRead2 = await db.readAllPortsMatchingName("Helsingborg", "Sweden")
+	 try{
+		assert.equal(portRead2.length, 1)
+		console.log("4. 	Pass")
+	 }catch(e){
+		console.log("4. 	Fail\n")
+		console.log(e)
+	 }
+
+	 const readAllShips = await db.readMostRecentPositionAllShips()
+	 try{
+		assert.equal(readAllShips.length, 15)
+		console.log("5. 	Pass")
+	 }catch(e){
+		console.log("5. 	Fail\n")
+		console.log(e)
+	 }
+	 try {
+		 assert.equal(readAllShips[1].MMSI, 248372000)
+		 console.log("6. 	Pass")
+	 }catch(e){
+		console.log("6. 	Fail\n")
+		console.log(e)
+	 }
+
+	 const readFromMMSI = await db.readMostRecentPosition(244234000) 
+	 try{
+		assert.equal(readFromMMSI.IMO, 9361354)
+		console.log("7. 	Pass")
+	 }catch(e){
+		console.log("7. 	Fail\n")
+		console.log(e)
+	 }
+
 	 const readVesselData = await db.readPermanentVesselData(parsedBatch3[0].MMSI, parsedBatch3[0].IMO, parsedBatch3[0].Name) 
 	 const readMostRecentPosition =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 try{
 	 	assert.equal(readMostRecentPosition.IMO, readVesselData[0].IMO)
-	 	console.log("3.	Pass")
+	 	console.log("8.	Pass")
 	 }catch(e){
-		 console.log("3.	Fail\n")
+		 console.log("8.	Fail\n")
 		 console.log(e)
 	 }
 
-	 
+	 const readTileScale1 = await db.readRecentPositionsInTile(1)
+	 try {
+		assert.equal(readTileScale1.length, 13)
+		console.log("9. 	Pass")
+	 }catch(e){
+		console.log("9. 	Fail\n")
+		console.log(e)
+	 }
+	 const readTileScale3 = await db.readRecentPositionsInTile(5529)
+	 try {
+		assert.equal(readTileScale3.length, 4)
+		console.log("10. 	Pass")
+	 }catch(e){
+		console.log("10. 	Fail\n")
+		console.log(e)
+	 }
+
  }
  
 /**
@@ -405,6 +464,10 @@
 	await db.deleteMessages()
 	await unitTests();
 	await integrationTests();
+	db.killPool();
  }
  
  mainTest()
+db.readRecentPositionsInTile(5529)
+
+ //db.killPool();

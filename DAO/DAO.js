@@ -23,6 +23,11 @@
  module.exports = class DOA {
    stub = false;
  
+    killPool() {
+     return pool.end(function(error) { 
+       console.log("Connections ended.");      
+      });    
+    }
   /**
   * Inserts a batch of ais messages into the database (position reports and static data).
   * @function insertAISMessageBatch
@@ -207,7 +212,7 @@
    /**
   * Read all most recent ship positions. THis function takes in no parameters.
   * @function readMostRecentPositionAllShips
-  * @returns {array} array of ship documents - Ship document of JSON form that contains MMSI, latitude, longitude, IMO, and Name.
+  * @returns {object} array of ship documents - Ship document of JSON form that contains MMSI, latitude, longitude, IMO, and Name.
   */
    readMostRecentPositionAllShips() {
      try{
@@ -228,6 +233,7 @@
                  array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG": results[i].CoG})
                }
                resolve(array);
+               //console.log(array)
              }
            })
        }).catch((e) => {
@@ -245,7 +251,7 @@
   * Retrieves the most recent position of the ship that contains the provided mmsi.
   * @function readMostRecentPosition
   * @param {integer} MMSI - MMSI of the ship.
-  * @returns {JSON} json position document - Position document of JSON form that contains the MMSI, Latitude, Longitude, and IMO.
+  * @returns {object} json position document - Position document of JSON form that contains the MMSI, Latitude, Longitude, and IMO.
   */
    readMostRecentPosition(MMSI) { 
      try{
@@ -288,7 +294,7 @@
   * @param {integer} IMO (optional)- IMO of the vessel.
   * @param {string} Name (optional)- Name of the vessel.
   * @param {integer} CallSign (optional)- Call sign of the vessel.
-  * @returns {JSON} json vessel document - Vessel document of JSON form that contains the vessel information from the database.
+  * @returns {object} json vessel document - Vessel document of JSON form that contains the vessel information from the database.
   */
  
    readPermanentVesselData(MMSI, IMO, Name, CallSign) {
@@ -331,7 +337,7 @@
   * Reads the most recent position of every ship that is within the tile that matches the provided tile Id.
   * @function readRecentPositionsInTile
   * @param {integer} tiledId - Id of a map view tile.
-  * @returns {array} array of ship odocuments - Array of ship documents (json form) that each contain MMSI, Latitude, Longitude, IMO, Name.
+  * @returns {object} array of ship odocuments - Array of ship documents (json form) that each contain MMSI, Latitude, Longitude, IMO, Name.
   */
    readRecentPositionsInTile(tileId) {
      try {
@@ -358,6 +364,7 @@
                    array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG":results[i].CoG})
                  }
                  resolve(array)
+                 //console.log(array)
                  //resolve(results)
                }
              }
@@ -378,7 +385,7 @@
   * @function readAllPortsMatchingName
   * @param {string} Name- Name of the Port.
   * @param {string} Country (optional)- Country that the port is in.
-  * @returns {array} array of port documents - Array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
+  * @returns {object} array of port documents - Array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
   */
  
    readAllPortsMatchingName(Name, Country){
@@ -423,8 +430,8 @@
   * @function readAllShipPositionsInScale3ContainingPort
   * @param {string} portName - Name of the Port.
   * @param {string} country - Country that the port is in.
-  * @returns {array} array of port documents - If there is more than one port with that matched the provided port name and country, the function returns an array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
-  * @returns {array} array of position documents - If there is a unique port that matches the provided port name and country, the function return an a array of position documents of JSON form that each contain the MMSI, Latitude, Longitude, and IMO.
+  * @returns {object} array of port documents - If there is more than one port with that matched the provided port name and country, the function returns an array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
+  * @returns {object} array of position documents - If there is a unique port that matches the provided port name and country, the function return an a array of position documents of JSON form that each contain the MMSI, Latitude, Longitude, and IMO.
   */
  
    readAllShipPositionsInScale3ContainingPort(portName, country) {
@@ -472,7 +479,7 @@
                      for (let i = 0; i<portCount; i++){
                        array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
                      }
-                     console.log(array)
+                     //console.log(array)
                      resolve(array);
                    }
                    //console.log(results.length)
