@@ -3,26 +3,11 @@ let lastClickedTile;
 let containedTiles = [];
 let currentTileJSON;
 let tileJSON;
-let displayableVessels = [];
-let speed = 3;
+let secondsPerRequest = 2;
 
 setInterval(() => {
-  $.ajax({
-    type: "GET",
-    url: "http://localhost:3000/vessel",
-    success: function (vessels) {
-      let vesselJSON = JSON.parse(vessels);
-      displayableVessels = vesselJSON;
-      undrawVessels();
-      for (let vessel of vesselJSON) {
-        drawVessel(vessel);
-      }
-    },
-    fail: function (err) {
-      console.log(err);
-    },
-  });
-}, speed * 1000);
+  updateVessels();
+}, secondsPerRequest * 1000);
 
 $(document).ready(() => {
   $.ajax({
@@ -49,17 +34,9 @@ function undrawVessels() {
   });
 }
 
-function updateDisplayableVessels(vessels) {
-  for (let vessel of vessels) {
-    if (vessel[4]) {
-      displayableVessels[vessel[4]] = vessel;
-    }
-  }
-}
-
 function getTime() {
   let queryDate = new Date(basedate.getTime() + timeOffset * 1000);
-  timeOffset += speed;
+  timeOffset += secondsPerRequest;
   return queryDate.toString().match(/\d\d:\d\d:\d\d/g)[0];
 }
 
@@ -69,7 +46,6 @@ function displayDefault() {
 }
 
 function drawVessel(vessel) {
-  console.log(vessel.long)
   if (
     !(
       vessel.long > currentTileJSON.image_west &&
@@ -117,7 +93,7 @@ function drawVessel(vessel) {
     `translate(-${boatWidth / 2}px,-${boatHeight / 2}px)
     rotate(${vessel.CoG}deg)`
   );
-  boat.setAttribute("data-imo", vessel[4]);
+  boat.setAttribute("data-imo", vessel.IMO);
 
   boat.classList.add("boat");
   tileDiv.appendChild(boat);
@@ -188,9 +164,7 @@ function updateDisplay(tileJSON) {
   img.addEventListener("mouseup", (event) => handleClick(event));
   tileDiv.appendChild(img);
 
-  for (let vessel of Object.keys(displayableVessels)) {
-    drawVessel(displayableVessels[vessel]);
-  }
+  updateVessels();
 }
 
 function findClickedTile(clickedLon, clickedLat) {
@@ -230,4 +204,38 @@ function updateContainedTiles(containerId) {
       containedTiles.push(tileJSON[obj]);
     }
   }
+}
+
+function getStaticData(MMSI) {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:3000/vessel/data",
+    data: {
+      MMSI: MMSI,
+    },
+    success: function (vesselData) {},
+    fail: function (err) {
+      console.log(err);
+    },
+  });
+}
+
+function updateVessels() {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:3000/vessel",
+    data: {
+      tileId: currentTileJSON.id,
+    },
+    success: function (vessels) {
+      let vesselJSON = JSON.parse(vessels);
+      undrawVessels();
+      for (let vessel of vesselJSON) {
+        drawVessel(vessel);
+      }
+    },
+    fail: function (err) {
+      console.log(err);
+    },
+  });
 }
