@@ -3,7 +3,7 @@ const DAO = require("../DAO/DAO.js");
 const db = new DAO();
 const headers = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, GET",
+  "Access-Control-Allow-Methods": "POST, GET"
 };
 
 // clean up then set 5 min cleanup
@@ -157,6 +157,7 @@ function handleGetVesselData(req, res, receivedJSON) {
     let callsign = receivedJSON.hasOwnProperty("callsign") ? receivedJSON.callsign : null;
     db.readPermanentVesselData(MMSI, IMO, name, callsign)
     .then(vesselData => {
+      res.writeHead(200, headers)
       res.end(JSON.stringify(vesselData));
       console.log(`Serving vessel static data for vessel MMSI: ${MMSI}`);
     })
