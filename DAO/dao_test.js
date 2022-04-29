@@ -226,6 +226,17 @@
 		console.log(e)
 	 }
  }
+
+ async function readRecentPositionsInTileUnitTest(){
+	let type = await db.readRecentPositionsInTile(1)
+	try{
+		assert.equal(type,	1)
+		console.log("14.	Pass")
+	}catch(e){
+	   console.log("14.	Fail\n")
+	   console.log(e)
+	}
+}
  /**
  * Unit test that tests whether the readAllPortsMatchingName function can be called on the interface with the correct parameter (Name) without a connection to the database.
  */
@@ -266,6 +277,40 @@
 		console.log(e)
 	 }
  }
+
+ async function readAllShipPositionsInScale3CorrectParametersUnitTest(){
+	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort("Nyborg", "Denmark")
+	try{
+		assert.equal(readFromPortName, 1)
+		console.log("17.	Pass")
+	}catch(e){
+		console.log("17.	Fail\n")
+		console.log(e)
+	}
+ }
+
+ async function readAllShipPositionsInScale3IncorrectCountryUnitTest(){
+	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort(123, "Denmark")
+	try{
+		assert.equal(readFromPortName, -1)
+		console.log("18.	Pass")
+	}catch(e){
+		console.log("18.	Fail\n")
+		console.log(e)
+	}
+ }
+
+ async function readAllShipPositionsInScale3IncorrectPortNameUnitTest(){
+	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort("Nyborg", 123)
+	try{
+		assert.equal(readFromPortName, -1)
+		console.log("19.	Pass")
+	}catch(e){
+		console.log("19.	Fail\n")
+		console.log(e)
+	}
+ }
+
  
  /**
  * Function that contains and calls all of the unit tests.
@@ -287,9 +332,14 @@
 	 readPermanentVesselDataThreeParamsUnitTest();
 	 readPermanentVesselDataAllParamsUnitTest();
 	 readPermanentVesselDataNoParamsUnitTest();
+	 readRecentPositionsInTileUnitTest();
 	 readAllPortsMatchingNameOneParamUnitTest();
 	 readAllPortsMatchingNameBothParamsUnitTest();
 	 readAllPortsMatchingNameWrongParamsUnitTest();
+	 readAllShipPositionsInScale3CorrectParametersUnitTest();
+	 readAllShipPositionsInScale3IncorrectCountryUnitTest();
+	 readAllShipPositionsInScale3IncorrectPortNameUnitTest();
+	
 	 
  }
 
@@ -317,6 +367,9 @@
 		console.log(e)
 	 }
 
+	 //const type = await db.readRecentPositionsInTile(1)
+	 //assert.equal(type, 1)
+
 	 const insertion = await db.insertAISMessageBatch(batch3)
 	 try{
 	 	assert.equal(insertion, 35)
@@ -335,6 +388,7 @@
 		 console.log("3.	Fail\n")
 		 console.log(e)
 	 }
+
 	 
  }
  
