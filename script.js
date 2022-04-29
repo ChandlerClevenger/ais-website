@@ -3,7 +3,7 @@ let lastClickedTile;
 let containedTiles = [];
 let currentTileJSON;
 let tileJSON;
-let secondsPerRequest = 2;
+let secondsPerRequest = 3;
 
 setInterval(() => {
   updateVessels();
@@ -80,23 +80,50 @@ function drawVessel(vessel) {
     0,
     x
   );
-  let boatWidth = 20;
-  let boatHeight = 20;
+  let boatWidth = 20 * currentTileJSON.scale;
+  let boatHeight = 20 * currentTileJSON.scale;
+  boat.style.setProperty("z-index", 1000);
   boat.style.setProperty("position", "absolute");
   boat.style.setProperty("left", boatLon + "px");
   boat.style.setProperty("top", boatLat + "px");
   boat.style.setProperty("width", boatWidth + "px");
   boat.style.setProperty("height", boatHeight + "px");
-  boat.style.setProperty("pointer-events", "none");
   boat.style.setProperty(
     "transform",
     `translate(-${boatWidth / 2}px,-${boatHeight / 2}px)
     rotate(${vessel.CoG}deg)`
   );
-  boat.setAttribute("data-imo", vessel.IMO);
-
+  boat.setAttribute("data-MMSI", vessel.MMSI);
+  boat.addEventListener("click", (event) => {
+    displayVesselData(vessel.MMSI);
+  })
   boat.classList.add("boat");
-  tileDiv.appendChild(boat);
+  tileDiv.prepend(boat);
+}
+
+function displayVesselData(MMSI) {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:3000/vessel/data",
+    data: {
+      MMSI: MMSI
+    },
+    success: function (vesselData) {
+      let vesselJSON = JSON.parse(vesselData);
+      showVesselData(vesselJSON[0]);
+    },
+    fail: function (err) {
+      console.log(err);
+    },
+  });
+}
+
+function showVesselData(vesselJSON) {
+  let vesselDataDiv = document.getElementById("vesselData");
+  vesselDataDiv.innerHTML = ""
+  for (let property of Object.keys(vesselJSON)) {
+    vesselDataDiv.innerHTML += property + " |     " + vesselJSON[property] + "<br>";
+  }
 }
 
 function handleClick(event) {
