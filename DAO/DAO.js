@@ -387,7 +387,7 @@
   * @param {string} Country (optional)- Country that the port is in.
   * @returns {object} array of port documents - Array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
   */
- 
+
    readAllPortsMatchingName(Name, Country){
      try{
        if (this.stub) {
@@ -425,6 +425,32 @@
      }
    }
  
+
+ /**
+  * Reads the information of all ports that have the provided name and the optional country parameter.
+  * @function readAllPorts
+  * @returns {object} array of port documents - Array of port documents (json form) that each contain the id, name, country, latitude, longitude and containing map views (scale 1, 2, and 3) of the port.
+  */
+   readAllPorts() {
+    return new Promise((resolve, reject) => {
+      let query = "SELECT * FROM port;"
+      pool.query(
+        query,
+        function (error, results) {
+          if (error) {
+            console.log("ERROR RETREIVING PORTS")
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        })
+    }).catch((e) => {
+      console.log("Error executing readAllPorts query.\n", e)
+      return -1
+    })
+  }
+
+
    /**
   * Reads the most recent position of all ships that are in the tile of scale 3 that contains the provided port name and country.
   * @function readAllShipPositionsInScale3ContainingPort
