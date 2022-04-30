@@ -83,8 +83,8 @@ function drawVessel(vessel) {
     0,
     x
   );
-  let boatWidth = 20 * currentTileJSON.scale;
-  let boatHeight = 20 * currentTileJSON.scale;
+  let boatWidth = 20 * currentTileJSON.scale * scale.value;
+  let boatHeight = 20 * currentTileJSON.scale * scale.value;
   boat.style.setProperty("z-index", 1000);
   boat.style.setProperty("position", "absolute");
   boat.style.setProperty("left", boatLon + "px");
