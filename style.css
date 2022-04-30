@@ -19,3 +19,7 @@ body {
   height: 100vh;
   width: 100vh;
 }
+
+.port {
+  pointer-events: none;
+}
