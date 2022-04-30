@@ -218,7 +218,7 @@
          return 1
        }
        return new Promise((resolve, reject) => {
-         var query = "Select Timestamp, vessel.MMSI, Latitude, Longitude, IMO, Name, CoG FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND (Timestamp, vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI)"
+         var query = "SELECT Timestamp, vessel.MMSI, Latitude, Longitude, IMO, Name, CoG FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND (Timestamp, vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI)"
          pool.query(
            query,
            function (error, results, fields) {
@@ -259,7 +259,7 @@
        }
        else {
          return new Promise((resolve, reject) => {
-           var query = "Select vessel.MMSI, Latitude, Longitude, IMO, Name FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND vessel.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
+           var query = "SELECT vessel.MMSI, Latitude, Longitude, IMO, Name FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND vessel.MMSI=" + MMSI + " order by Timestamp DESC limit 1";
            pool.query(
              query,
              function (error, results, fields) {
@@ -345,8 +345,8 @@
        }
        else{
          return new Promise((resolve, reject) => {
-           let query2 = "Select Timestamp, vessel.MMSI, Latitude, Longitude, IMO, Name, CoG FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND longitude>(Select ActualLongitudeW from map_view where Id="+ tileId + ") AND longitude <(Select ActualLongitudeE from map_view where Id=" + tileId + ") "
-           + "AND Latitude>(Select ActualLatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select ActualLatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
+           let query2 = "SELECT Timestamp, vessel.MMSI, Latitude, Longitude, IMO, Name, CoG FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND Longitude>(Select ActualLongitudeW from map_view where Id="+ tileId + ") AND Longitude <(Select ActualLongitudeE from map_view where Id=" + tileId + ") "
+           + "AND Latitude>(Select ActualLatitudeS from map_view where Id=" + tileId + ") AND Latitude<(Select ActualLatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
            
            pool.query(
              query2,
@@ -475,7 +475,7 @@
                    if (portCount == 1) {
                      
                      let tileId = results[0].MapView3_Id
-                     let query2 = "Select Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude<(Select LongitudeE from map_view where Id=" + tileId + ") "
+                     let query2 = "SELECT Timestamp,VESSEL.MMSI,Latitude,Longitude,IMO FROM vessel, d_position_report WHERE vessel.MMSI=d_position_report.MMSI AND longitude>(Select LongitudeW from map_view where Id="+ tileId + ") AND longitude<(Select LongitudeE from map_view where Id=" + tileId + ") "
                      + "AND Latitude>(Select LatitudeS from map_view where Id=" + tileId + ") AND latitude<(Select LatitudeN from map_view where Id=" + tileId + ") AND (Timestamp, vessel.MMSI) IN (Select Max(Timestamp), MMSI FROM d_position_report GROUP BY MMSI);"
                      pool.query(
                        query2,
