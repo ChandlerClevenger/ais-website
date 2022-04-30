@@ -1,9 +1,11 @@
 let tileDiv = document.querySelector("#tileDisplay");
+let scale = document.querySelector("#slider");
+let ports = [];
 let lastClickedTile;
 let containedTiles = [];
 let currentTileJSON;
 let tileJSON;
-let secondsPerRequest = 3;
+let secondsPerRequest = 5;
 
 setInterval(() => {
   updateVessels();
@@ -16,6 +18,7 @@ $(document).ready(() => {
     success: function (data) {
       tileJSON = data;
       displayDefault();
+      setUpPorts();
     },
     fail: function (err) {
       console.log(err);
@@ -192,6 +195,7 @@ function updateDisplay(tileJSON) {
   tileDiv.appendChild(img);
 
   updateVessels();
+  drawPorts();
 }
 
 function findClickedTile(clickedLon, clickedLat) {
@@ -260,6 +264,80 @@ function updateVessels() {
       for (let vessel of vesselJSON) {
         drawVessel(vessel);
       }
+    },
+    fail: function (err) {
+      console.log(err);
+    },
+  });
+}
+
+function drawPorts() {
+  for (let port of ports) {
+    if (
+      !(
+        port.Longitude > currentTileJSON.image_west &&
+        port.Longitude < currentTileJSON.image_east &&
+        port.Latitude > currentTileJSON.image_south &&
+        port.Latitude < currentTileJSON.image_north
+      )
+    ) {
+      continue;
+    }
+    
+  // get coords
+  let portImg = document.createElement("img");
+  portImg.setAttribute("src", "./port.png");
+
+  let x = port.Longitude;
+  let y = port.Latitude;
+  let minLat = currentTileJSON.image_north;
+  let maxLat = currentTileJSON.image_south;
+  let maxLon = currentTileJSON.image_east;
+  let minLon = currentTileJSON.image_west;
+  let portLat = convertVal(
+    maxLat,
+    minLat,
+    tileDiv.getBoundingClientRect().height,
+    0,
+    y
+  );
+
+  let portLon = convertVal(
+    maxLon,
+    minLon,
+    tileDiv.getBoundingClientRect().width,
+    0,
+    x
+  );
+
+  // make and display port 
+  let portWidth = 15 * currentTileJSON.scale * scale.value;
+  let portHeight = 15 * currentTileJSON.scale * scale.value;
+  portImg.style.setProperty("position", "absolute");
+  portImg.style.setProperty("left", portLon + "px");
+  portImg.style.setProperty("top", portLat + "px");
+  portImg.style.setProperty("width", portWidth + "px");
+  portImg.style.setProperty("height", portHeight + "px");
+  portImg.style.setProperty(
+    "transform",
+    `translate(-${portWidth / 2}px,-${portHeight / 2}px)`
+  );
+  portImg.setAttribute("data-name", port.Name);
+  portImg.addEventListener("click", (event) => {
+    // add port click
+  })
+  portImg.classList.add("port");
+  tileDiv.prepend(portImg);
+  }
+}
+
+function setUpPorts() {
+  $.ajax({
+    type: "GET",
+    url: "http://localhost:3000/port",
+    success: function (allPorts) {
+      ports = JSON.parse(allPorts);
+      drawPorts();
     },
     fail: function (err) {
       console.log(err);
