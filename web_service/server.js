@@ -59,7 +59,13 @@ function handleGET(req, res) {
         sendInvalidEndpoint(req, res);
         break;
       }
-      handleGetPortByName(req, res, receivedJSON);
+      if (receivedJSON && receivedJSON.hasOwnProperty("tileId")) {
+        handleGetPortByName(req, res, receivedJSON);
+      }
+
+      if (!receivedJSON) {
+        handleGetAllPorts(req, res);
+      }
       break;
 
     default:
@@ -164,6 +170,13 @@ function handleGetVesselData(req, res, receivedJSON) {
   } else {
     sendInvalidParameters(res, "Must include an MMSI!");
   }
+}
+
+function handleGetAllPorts(req, res) {
+  res.writeHead(200, headers);
+  db.readAllPorts().then(ports => {
+    res.end(JSON.stringify(ports));
+  })
 }
 
 function handleGetPortByName(req, res, receivedJSON) {
