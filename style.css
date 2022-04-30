@@ -9,19 +9,10 @@ body {
   background-color: blanchedalmond;
 }
 
-body {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-}
-
 #tileDisplay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  height: fit-content;
+  position: relative;
   width: fit-content;
+  overflow: hidden;
 }
 
 #tileDisplay > img {
