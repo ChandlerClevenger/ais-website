@@ -49,17 +49,6 @@ function displayDefault() {
 }
 
 function drawVessel(vessel) {
-  if (
-    !(
-      vessel.long > currentTileJSON.image_west &&
-      vessel.long < currentTileJSON.image_east &&
-      vessel.lat > currentTileJSON.image_south &&
-      vessel.lat < currentTileJSON.image_north
-    )
-  ) {
-    return;
-  }
-
   let boat = document.createElement("img");
   boat.setAttribute("src", "./boat.png");
   let x = vessel.long;
