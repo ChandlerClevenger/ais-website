@@ -57,7 +57,6 @@
          })
        }
      } catch (e){
-       //console.log(e.toString())
        return -1
      }
    }
@@ -204,7 +203,6 @@
        })
      }
      catch (e){
-       //console.log(e.toString())
        return -1
      }
    }
@@ -233,7 +231,6 @@
                  array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG": results[i].CoG})
                }
                resolve(array);
-               //console.log(array)
              }
            })
        }).catch((e) => {
@@ -242,7 +239,6 @@
        })
      }
      catch (e) {
-       //console.log(e.toString())
        return -1
      }
    }
@@ -364,8 +360,6 @@
                    array.push({"MMSI":results[i].MMSI,"lat":results[i].Latitude,"long":results[i].Longitude, "IMO":results[i].IMO, "Name":results[i].Name, "CoG":results[i].CoG})
                  }
                  resolve(array)
-                 //console.log(array)
-                 //resolve(results)
                }
              }
            )
@@ -505,16 +499,13 @@
                      for (let i = 0; i<portCount; i++){
                        array.push({"Id":results[i].Id,"Name":results[i].Name,"Country":results[i].Country, "Latitude":results[i].Latitude, "Longitude":results[i].Longitude, "MapView1_Id":results[i].MapView1_Id, "MapView2_Id":results[i].MapView2_Id, "MapView3_Id":results[i].MapView3_Id})
                      }
-                     //console.log(array)
                      resolve(array);
                    }
-                   //console.log(results.length)
                  }
                })
          })
        }
      }catch(e){
-       //console.log(e.toString())
        return -1
      }
    }
