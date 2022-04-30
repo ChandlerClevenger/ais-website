@@ -512,10 +512,10 @@
  
      /**
   * Function solely used for testing. Purpose: Deletes all AIS messages from the database at the start of the integration testing.
-  * @function readMostRecentPosition
+  * @function clearDynamicTables
   * @returns {integer} deletionAmount - Number of rows affected
   */
-   deleteMessages() {
+   clearDynamicTables() {
      return new Promise((resolve, reject) => {
        var query = "DELETE FROM d_position_report; DELETE FROM d_static_data;"
        pool.query(

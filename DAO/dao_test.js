@@ -134,6 +134,21 @@
 		console.log(e)
 	 }
  }
+
+ /**
+ * Unit test that tests whether the readMostRecentPositionAllShips function can be called on the interface.
+ */
+ async function readMostRecentPositionAllShipsUnitTest(){
+	let successfulFunctionCall = await db.readMostRecentPositionAllShips()
+	try{
+		assert.equal(successfulFunctionCall, 1)
+		console.log("7.	Pass")
+	}catch(e){
+	   console.log("7.	Fail\n")
+	   console.log(e)
+	}
+}
+
  /**
  * Unit test that tests whether the readMostRecentPosition function can be called on the interface with the correct parameters without a connection to the database.
  */
@@ -141,9 +156,9 @@
 	 let messageType = await db.readMostRecentPosition(2123812)
 	 try{
 	 	assert.equal(messageType, 1)
-	 	console.log("7.	Pass")
+	 	console.log("8.	Pass")
 	 }catch(e){
-		console.log("7.	Fail\n")
+		console.log("8.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -154,9 +169,9 @@
 	 let messageType = await db.readMostRecentPosition('212394')
 	 try{
 	 	assert.equal(messageType, -1)
-	 	console.log("8.	Pass")
+	 	console.log("9.	Pass")
 	 }catch(e){
-		console.log("8.	Fail\n")
+		console.log("9.	Fail\n")
 		console.log(e)
 	 }
 
@@ -168,9 +183,9 @@
 	 let messageLength = await db.readPermanentVesselData(319904000)
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("9.	Pass")
+	 	console.log("10.	Pass")
 	 }catch(e){
-		console.log("9.	Fail\n")
+		console.log("10.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -181,9 +196,9 @@
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021)
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("10.	Pass")
+	 	console.log("11.	Pass")
 	 }catch(e){
-		console.log("10.	Fail\n")
+		console.log("11.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -194,9 +209,9 @@
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj")
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("11.	Pass")
+	 	console.log("12.	Pass")
 	 }catch(e){
-		console.log("11.	Fail\n")
+		console.log("12.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -207,9 +222,9 @@
 	 let messageLength = await db.readPermanentVesselData(319904000,1000021,"Montkaj", "J21AS")
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("12.	Pass")
+	 	console.log("13.	Pass")
 	 }catch(e){
-		console.log("12.	Fail\n")
+		console.log("13.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -217,26 +232,44 @@
  * Unit test that tests whether the readPermanentVesselData function fails nicely with incorrect input.
  */
  async function readPermanentVesselDataNoParamsUnitTest(){
-	 let messageLength = await db.readPermanentVesselData()
+	 let messageLength = await db.readPermanentVesselData('vessel')
 	 try{
 	 	assert.equal(messageLength, -1)
-	 	console.log("13.	Pass")
+	 	console.log("14.	Pass")
 	 }catch(e){
-		console.log("13.	Fail\n")
+		console.log("14.	Fail\n")
 		console.log(e)
 	 }
  }
 
+ /**
+ * Unit test that tests whether the readRecentPositionsInTile function can be called on the interface with the correct parameters without a connection to the database.
+ */
+
  async function readRecentPositionsInTileUnitTest(){
-	let type = await db.readRecentPositionsInTile(1)
+	let readPositionsInTileId = await db.readRecentPositionsInTile(1)
 	try{
-		assert.equal(type,	1)
-		console.log("14.	Pass")
+		assert.equal(readPositionsInTileId,	1)
+		console.log("15.	Pass")
 	}catch(e){
-	   console.log("14.	Fail\n")
+	   console.log("15.	Fail\n")
 	   console.log(e)
 	}
-}
+ }
+
+/**
+ * Unit test that tests whether the readRecentPositionsInTile function fails nicely with incorrect input.
+ */
+ async function readRecentPositionsInTileIncorrectInputUnitTest(){
+	let readIncorrectTileId = await db.readRecentPositionsInTile("12345")
+	try{
+		assert.equal(readIncorrectTileId,	-1)
+		console.log("16.	Pass")
+	}catch(e){
+	   console.log("16.	Fail\n")
+	   console.log(e)
+	}
+ }
  /**
  * Unit test that tests whether the readAllPortsMatchingName function can be called on the interface with the correct parameter (Name) without a connection to the database.
  */
@@ -244,10 +277,10 @@
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj")
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("14.	Pass")
+	 	console.log("17.	Pass")
 	 }
 	 catch(e){
-		console.log("14.	Fail\n")
+		console.log("17.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -258,9 +291,9 @@
 	 let messageLength = await db.readAllPortsMatchingName("Montkaj", "Peru")
 	 try{
 	 	assert.equal(messageLength, 1)
-	 	console.log("15.	Pass")
+	 	console.log("18.	Pass")
 	 }catch(e){
-		console.log("15.	Fail\n")
+		console.log("18.	Fail\n")
 		console.log(e)
 	 }
  }
@@ -271,42 +304,51 @@
 	 let messageLength = await db.readAllPortsMatchingName(1020, "Peru")
 	 try{
 	 	assert.equal(messageLength, -1)
-	 	console.log("16.	Pass")
+	 	console.log("19.	Pass")
 	 }catch(e){
-		console.log("16.	Fail\n")
+		console.log("19.	Fail\n")
 		console.log(e)
 	 }
  }
 
+ /**
+ * Unit test that tests whether the readAllShipPositionsInScale3ContainingPort function can be called on the interface with the correct parameters (Name, Country) without a connection to the database.
+ */
  async function readAllShipPositionsInScale3CorrectParametersUnitTest(){
 	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort("Nyborg", "Denmark")
 	try{
 		assert.equal(readFromPortName, 1)
-		console.log("17.	Pass")
+		console.log("20.	Pass")
 	}catch(e){
-		console.log("17.	Fail\n")
+		console.log("20.	Fail\n")
 		console.log(e)
 	}
  }
 
+ /**
+ * Unit test that tests whether the readAllShipPositionsInScale3ContainingPort function fails nicely with incorrect first parameter.
+ */
  async function readAllShipPositionsInScale3IncorrectCountryUnitTest(){
 	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort(123, "Denmark")
 	try{
 		assert.equal(readFromPortName, -1)
-		console.log("18.	Pass")
+		console.log("21.	Pass")
 	}catch(e){
-		console.log("18.	Fail\n")
+		console.log("21.	Fail\n")
 		console.log(e)
 	}
  }
 
+  /**
+ * Unit test that tests whether the readAllShipPositionsInScale3ContainingPort function fails nicely with incorrect second parameter.
+ */
  async function readAllShipPositionsInScale3IncorrectPortNameUnitTest(){
 	let readFromPortName = await db.readAllShipPositionsInScale3ContainingPort("Nyborg", 123)
 	try{
 		assert.equal(readFromPortName, -1)
-		console.log("19.	Pass")
+		console.log("22.	Pass")
 	}catch(e){
-		console.log("19.	Fail\n")
+		console.log("22.	Fail\n")
 		console.log(e)
 	}
  }
@@ -325,6 +367,7 @@
 	 cleanupIncorrectInputUnitTest();
 	 insertAISMessageUnitTest();
 	 insertAISMessageIncorrectInputUnitTest();
+	 readMostRecentPositionAllShipsUnitTest();
 	 readMostRecentPositionUnitTest();
 	 readMostRecentPositionIncorrectInputUnitTest();
 	 readPermanentVesselDataOneParamUnitTest();
@@ -333,6 +376,7 @@
 	 readPermanentVesselDataAllParamsUnitTest();
 	 readPermanentVesselDataNoParamsUnitTest();
 	 readRecentPositionsInTileUnitTest();
+	 readRecentPositionsInTileIncorrectInputUnitTest();
 	 readAllPortsMatchingNameOneParamUnitTest();
 	 readAllPortsMatchingNameBothParamsUnitTest();
 	 readAllPortsMatchingNameWrongParamsUnitTest();
@@ -461,13 +505,14 @@
 	console.log("-------------------------------------------------")
 	console.log("\nClearing the Dynamic Position Report and Static Data Tables from the Database...")
 	console.log("-------------------------------------------------")
-	await db.deleteMessages()
+	await db.clearDynamicTables()
 	await unitTests();
 	await integrationTests();
+	await db.clearDynamicTables()
 	db.killPool();
  }
  
  mainTest()
-db.readRecentPositionsInTile(5529)
+//db.readRecentPositionsInTile(5529)
 
  //db.killPool();
