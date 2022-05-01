@@ -14,9 +14,9 @@ setInterval(() => {
 $(document).ready(() => {
   $.ajax({
     type: "GET",
-    url: "./denmark_tiles/MAP_VIEW.json",
+    url: "http://localhost:3000/map",
     success: function (data) {
-      tileJSON = data;
+      tileJSON = JSON.parse(data);
       displayDefault();
       setUpPorts();
     },
@@ -206,6 +206,7 @@ function convertVal(oldMax, oldMin, newMax, newMin, oldValue) {
 }
 
 function getTileFromTileId(tileId) {
+  console.log("IN GETTILEBYID:", typeof tileJSON)
   for (let obj of Object.keys(tileJSON)) {
     if (tileJSON[obj].id == tileId) {
       return tileJSON[obj];
