@@ -1,4 +1,5 @@
 const http = require("http");
+const fs = require('fs');
 const DAO = require("../DAO/DAO.js");
 const db = new DAO();
 const headers = {
@@ -68,10 +69,31 @@ function handleGET(req, res) {
       }
       break;
 
+    case "map":
+      if (pathParts.length) {
+        sendInvalidEndpoint(req, res);
+        break;
+      }
+      handleGetMap(req, res);
+      break;
+
     default:
       sendInvalidEndpoint(req, res);
       break;
   }
+}
+
+function handleGetMap(req, res) {
+  fs.readFile('MAP_VIEW.json', 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.writeHead(400, "Content-Type: text/plain");
+      res.end("Massive server failure to get map view json.");
+      return;
+    }
+    res.writeHead(200, headers);
+    res.end(data);
+  });
 }
 
 function handlePOST(req, res) {
