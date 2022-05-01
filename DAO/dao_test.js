@@ -1,9 +1,11 @@
 /**
  * @file Test file for the unit and integration tests of the DAO. 
- * By calling the main test function, this file automatically deletes all dynamic data from the tables so that we can properly test the functions.
+ * To run this file, just cd into the DAO directory, and run the command: node dao_test.js.
+ * By this file calling the main test function at the bottom of the file, this file automatically deletes all dynamic data from the tables so that we can properly test the functions.
  * Unit tests: These tests implement the stub mode. Which when true, these tests don't actually implement the full functions. They don't connect to the database.
  * These unit tests test two things: if they catch false input and if they can be called without connecting to the mysql database.
  * Integration tests: These tests implement the full function (connection to the database and everything). These test whether the connection passes and if the return value is correct.
+ * Unlike the unit tests, these integration tests are all written within the same function (integrationTests), which is called by the mainTest function.
  */
 
 
@@ -13,9 +15,9 @@
  
  //example insertion objects:
  let object1 = '{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}'
- let object2 = '{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}'
+ let object2 = '{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":212510000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[57.714567,9.267118]},"Status":"Under way using engine","RoT":0,"SoG":9.4,"CoG":233.7,"Heading":234}'
+ let object3 = '{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"AtoN","MMSI":992111878,"MsgType":"static_data","IMO":"Unknown","Name":"WK SE-51 WINDFARM","VesselType":"Undefined","Length":26,"Breadth":26,"A":13,"B":13,"C":13,"D":13}'
  let batch1 = '[{"Timestamp":"2020-11-18T00:00:04.000Z","Class":"Class A","MMSI":219018009,"MsgType":"static_data","IMO":9681302,"CallSign":"OWJT2","Name":"WORLD MISTRAL","VesselType":"HSC","Length":25,"Breadth":10,"Draught":2.4,"Destination":"ESBJERG","ETA":"2020-11-14T17:15:00.000Z","A":17,"B":8,"C":8,"D":2}, {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219005465,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.572602,11.929218]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":298.7,"Heading":203}]'
- let batch2 = [{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":218768000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.8001,10.146383]},"Status":"Under way sailing","RoT":0,"SoG":2.8,"CoG":151.6,"Heading":169},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":265011000,"MsgType":"static_data","IMO":8616087,"CallSign":"SBEN","Name":"SOFIA","VesselType":"Cargo","Length":72,"Breadth":11,"Draught":3.7,"Destination":"DK VEJ","ETA":"2020-11-18T10:00:00.000Z","A":59,"B":13,"C":6,"D":5},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":219012302,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.127,12.309167]},"Status":"Under way using engine","RoT":0,"SoG":0,"CoG":157,"Heading":193},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":2190045,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.471767,8.423305]},"Status":"Unknown value","SoG":0,"CoG":321.4},{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":273418960,"MsgType":"position_report","Position":{"type":"Point","coordinates":[54.638938,11.375737]},"Status":"Under way sailing","RoT":0,"SoG":0,"CoG":180.7,"Heading":22}];
  let batch3 = `[{"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":230006000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[55.394333,12.6615]},"Status":"Under way using engine","RoT":0,"SoG":18.4,"CoG":189.9,"Heading":191},
  {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":244234000,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.175183,12.458667]},"Status":"Under way using engine","RoT":0,"SoG":11.8,"CoG":316.8,"Heading":313},
  {"Timestamp":"2020-11-18T00:00:00.000Z","Class":"Class A","MMSI":538008427,"MsgType":"position_report","Position":{"type":"Point","coordinates":[56.125627,12.496787]},"Status":"Under way using engine","RoT":0,"SoG":11.1,"CoG":130.9,"Heading":130},
@@ -402,6 +404,7 @@
 	 parsedBatch3 = JSON.parse(batch3)
 	 db.stub = false
 
+	 // Integration test: checks that reading the most recent position of an mmsi on an empty table returns empty array.
 	 const readMostRecentPositionEmpty =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 try {
 	 	assert.deepEqual(readMostRecentPositionEmpty, {})
@@ -411,7 +414,7 @@
 		console.log(e)
 	 }
 
-	
+  	// Integration test: Insert ais message batch into the database.
 
 	 const insertion = await db.insertAISMessageBatch(batch3)
 	 try{
@@ -422,74 +425,146 @@
 		console.log(e)
 	 }
 
-	 //console.log(type.length)
-
-	 const portRead1 = await db.readAllPortsMatchingName("Nyborg", "Denmark")
+	 // Integration test: checks that the insertAISMessage function works with a connection to the database and returns the correct values.
+	 const insertionPositionReport = await db.insertAISMessage(object2)
 	 try{
-		assert.equal(portRead1.length, 2)
-		console.log("3. 	Pass")
+	 	assert.equal(insertionPositionReport, 1)
+	 	console.log("3. 	Pass")
 	 }catch(e){
 		console.log("3. 	Fail\n")
 		console.log(e)
 	 }
-	 const portRead2 = await db.readAllPortsMatchingName("Helsingborg", "Sweden")
+	 const insertionStaticData = await db.insertAISMessage(object3)
 	 try{
-		assert.equal(portRead2.length, 1)
-		console.log("4. 	Pass")
+	 	assert.equal(insertionStaticData, 1)
+	 	console.log("4. 	Pass")
 	 }catch(e){
 		console.log("4. 	Fail\n")
 		console.log(e)
 	 }
-
-	 const readAllShips = await db.readMostRecentPositionAllShips()
+	 
+	 //Integration tests: these tests check that the readAllPortsMatchingName function works with a connection to the database and returns the correct values.
+	 const portRead1 = await db.readAllPortsMatchingName("Nyborg", "Denmark")
 	 try{
-		assert.equal(readAllShips.length, 15)
+		assert.equal(portRead1.length, 2)
 		console.log("5. 	Pass")
 	 }catch(e){
 		console.log("5. 	Fail\n")
 		console.log(e)
 	 }
-	 try {
-		 assert.equal(readAllShips[1].MMSI, 248372000)
-		 console.log("6. 	Pass")
-	 }catch(e){
+	 try{
+		assert.equal(portRead1[0].Id, 381)
+		console.log("6. 	Pass")
+	 }
+	 catch(e){
 		console.log("6. 	Fail\n")
 		console.log(e)
 	 }
-
-	 const readFromMMSI = await db.readMostRecentPosition(244234000) 
+	 const portRead2 = await db.readAllPortsMatchingName("Augustenborg")
 	 try{
-		assert.equal(readFromMMSI.IMO, 9361354)
+		assert.equal(portRead2.length, 1)
 		console.log("7. 	Pass")
 	 }catch(e){
 		console.log("7. 	Fail\n")
 		console.log(e)
 	 }
 
+	 //Integration test: checks that the readMostRecentPositionAllShips function works with a connection to the database and returns the correct value
+	 const readAllShips = await db.readMostRecentPositionAllShips()
+	 try{
+		assert.equal(readAllShips.length, 16)
+		console.log("8. 	Pass")
+	 }catch(e){
+		console.log("8. 	Fail\n")
+		console.log(e)
+	 }
+	 try {
+		 assert.equal(readAllShips[1].MMSI, 248372000)
+		 console.log("9. 	Pass")
+	 }catch(e){
+		console.log("9. 	Fail\n")
+		console.log(e)
+	 }
+
+	 //Integration test: checks that the readMostRecentPosition function works with a connection to the database and returns the correct value
+	 const readFromMMSI = await db.readMostRecentPosition(244234000) 
+	 try{
+		assert.equal(readFromMMSI.IMO, 9361354)
+		console.log("10. 	Pass")
+	 }catch(e){
+		console.log("10. 	Fail\n")
+		console.log(e)
+	 }
+	 try{
+		 assert.equal(readFromMMSI.long, 12.458667)
+		 console.log("11. 	Pass")
+	 }catch(e){
+		console.log("11. 	Fail\n")
+		console.log(e)
+	 }
+
+	 //Integration test: checks that the readPermanentVesselData function works with a connection to the database and returns the correct value
 	 const readVesselData = await db.readPermanentVesselData(parsedBatch3[0].MMSI, parsedBatch3[0].IMO, parsedBatch3[0].Name) 
 	 const readMostRecentPosition =  await db.readMostRecentPosition(parsedBatch3[0].MMSI) 
 	 try{
 	 	assert.equal(readMostRecentPosition.IMO, readVesselData[0].IMO)
-	 	console.log("8.	Pass")
+	 	console.log("12.	Pass")
 	 }catch(e){
-		 console.log("8.	Fail\n")
+		 console.log("12.	Fail\n")
+		 console.log(e)
+	 }
+	 const readVesselDataOneParam = await db.readPermanentVesselData(parsedBatch3[0].MMSI)
+	 try{
+		 assert.equal(readVesselDataOneParam[0].Name, 'Finnkraft')
+		 console.log("13.	Pass")
+	 }catch(e){
+		 console.log("13.	Fail\n")
 		 console.log(e)
 	 }
 
+	 //Integration test: checks that the function readRecentPositionsInTile works with a connection to the database and returns the correct value
 	 const readTileScale1 = await db.readRecentPositionsInTile(1)
 	 try {
 		assert.equal(readTileScale1.length, 13)
-		console.log("9. 	Pass")
+		console.log("14. 	Pass")
 	 }catch(e){
-		console.log("9. 	Fail\n")
+		console.log("14. 	Fail\n")
 		console.log(e)
 	 }
 	 const readTileScale3 = await db.readRecentPositionsInTile(5529)
 	 try {
 		assert.equal(readTileScale3.length, 4)
-		console.log("10. 	Pass")
+		console.log("15. 	Pass")
 	 }catch(e){
-		console.log("10. 	Fail\n")
+		console.log("15. 	Fail\n")
+		console.log(e)
+	 }
+
+	 //Integration test: checks that the function readAllShipPositionsInScale3ContainingPort works with a connection to the database and returns the correct value
+	 const readPositionsInTileScale3ContainingPort = await db.readAllShipPositionsInScale3ContainingPort('Odense','Denmark')
+	 try {
+		assert.equal(readPositionsInTileScale3ContainingPort.length, 2)
+		console.log("16. 	Pass")
+	 }catch(e){
+		console.log("16. 	Fail\n")
+		console.log(e)
+	 }
+	 try{
+		assert.equal(readPositionsInTileScale3ContainingPort[1].Id, 4390)
+		console.log("17. 	Pass")
+	 }catch(e){
+		console.log("17. 	Fail\n")
+		console.log(e)
+	 }
+
+	 // Integration test: checks that the cleanupMessages function works with a connection to the database and deletes all of the old messages.
+	 let currentTime = new Date();
+	 const deleteOldMessage = await db.cleanupMessages(currentTime)
+	 try{
+	 	assert.equal(deleteOldMessage, 37)
+	 	console.log("18. 	Pass")
+	 }catch(e){
+		console.log("18. 	Fail\n")
 		console.log(e)
 	 }
 
@@ -508,11 +583,7 @@
 	await db.clearDynamicTables()
 	await unitTests();
 	await integrationTests();
-	await db.clearDynamicTables()
 	db.killPool();
  }
  
  mainTest()
-//db.readRecentPositionsInTile(5529)
-
- //db.killPool();
