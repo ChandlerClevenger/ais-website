@@ -90,7 +90,11 @@
            ]
            ,
            function (error, results, fields) {
-             if (error) reject(error);
+             if (error) {
+               console.log(error);
+               reject(error);
+               return;
+              }
              let totalRowsAffected = 0;
              for (let res of results) {
                totalRowsAffected += res.affectedRows;
